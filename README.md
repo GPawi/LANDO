@@ -1,6 +1,8 @@
 LANDO: Linked age-depth modeling
 ========
 
+[![DOI](https://zenodo.org/badge/432999664.svg)](https://zenodo.org/badge/latestdoi/432999664)
+
 <!-- LOGO -->
 <div id="top" align = "right"> 
 <img src='src/LANDO_Logo.jpg' align="right" height="120" />
