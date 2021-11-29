@@ -323,17 +323,17 @@ There are different parameters that can be adjusted for each modeling software i
 
 Modeling software | Parameter | Default value
 :---- | :---- | ----:
-Bacon | acc.shape | 1.5
- | acc.mean | 20
- | mem.strength | 10
- | mem.mean | 0.5
- | ssize | 8000
-clam | types_curve | 1:5
- | smoothness_curve | 0.1*(1:10)
- | poly\_degree_curve | 1:4
-hamstr | K | c(10,10)
-Undatable | xfactor | 0.1
- | bootpc | 30 
+_Bacon_ | acc.shape | 1.5
+_Bacon_ | acc.mean | 20
+_Bacon_ | mem.strength | 10
+_Bacon_ | mem.mean | 0.5
+_Bacon_ | ssize | 8000
+_clam_ | types_curve | 1:5
+_clam_ | smoothness_curve | 0.1*(1:10)
+ _clam_| poly\_degree_curve | 1:4
+_hamstr_ | K | c(10,10)
+_Undatable_ | xfactor | 0.1
+_Undatable_ | bootpc | 30 
 
 If you want to know more about the implemented functions, please use the `help()` function in Python. For instance, using `help(age_sr_plot.PlotAgeSR.plot_graph)` returns:
 
