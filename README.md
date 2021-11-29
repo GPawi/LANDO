@@ -98,7 +98,7 @@ conda activate LANDO
 
 ### _Getting **LANDO**_
 
-Users can download **LANDO** as [ZIP](https://github.com/GPawi/LANDO/archive/refs/heads/main.zip) or clone the repository via GitHub. **Windows** users will need to unzip the downloaded item into a folder named "LANDO-master". 
+Users can download **LANDO** as [ZIP](https://github.com/GPawi/LANDO/archive/refs/heads/main.zip) or clone the repository via GitHub. **Windows** users will need to unzip the downloaded item into a folder named "LANDO-main". 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -106,10 +106,10 @@ Users can download **LANDO** as [ZIP](https://github.com/GPawi/LANDO/archive/ref
 ## Installation of LANDO
 #### **Windows**
 
-First, open the `Anaconda Powershell Prompt` and navigate to the location of the LANDO-master folder by using either the `cd` command (change to directory on same drive) or the `pushd` command (change to directory on different drive). For this example, we assume that the `Anaconda Powershell Prompt` opens on the `C:` drive and the unpacked zip file "LANDO-master" is on the drive `E:`:
+First, open the `Anaconda Powershell Prompt` and navigate to the location of the LANDO-main folder by using either the `cd` command (change to directory on same drive) or the `pushd` command (change to directory on different drive). For this example, we assume that the `Anaconda Powershell Prompt` opens on the `C:` drive and the unpacked zip file "LANDO-main" is on the drive `E:`:
 
 ~~~
-pushd E:/LANDO-master
+pushd E:/LANDO-main
 ~~~
 
 If not already done, activate your conda environment in the Anconda prompt:
@@ -132,16 +132,16 @@ One by one, use these following lines to install all python packages and accept 
 
 ###### R
 
-To add the R kernel (IRkernel) to the Jupyter Notebook, first navigate in the `Anaconda Powershell Prompt` to the location of your R installation. In our working example, R was located in `C:/PROGRA~1/R/R-4.1.2/bin/x64`. Then use the following lines to install the kernel. Subsequently, navigate back to the LANDO-master folder.
+To add the R kernel (IRkernel) to the Jupyter Notebook, first navigate in the `Anaconda Powershell Prompt` to the location of your R installation. In our working example, R was located in `C:/PROGRA~1/R/R-4.1.2/bin/x64`. Then use the following lines to install the kernel. Subsequently, navigate back to the LANDO-main folder.
 
 ~~~
 > pushd C:/PROGRA~1/R/R-4.1.2/bin/x64
 > ./R -e 'install.packages("IRkernel", repos = "https://cloud.r-project.org")'
 > ./R -e 'IRkernel::installspec()'
-> pushd E:/LANDO-master
+> pushd E:/LANDO-main
 ~~~
 
->In case of an error message, substitute `./R` with `Rscript`. Alternatively, you can open R in the `Anaconda Powershell Prompt` by changing to the location of R, then use the `./R` command to activate R and then enter the two commands in between the single quotes `'`. Finally, quit R with `q()` and navigate back to the LANDO-master folder.
+>In case of an error message, substitute `./R` with `Rscript`. Alternatively, you can open R in the `Anaconda Powershell Prompt` by changing to the location of R, then use the `./R` command to activate R and then enter the two commands in between the single quotes `'`. Finally, quit R with `q()` and navigate back to the LANDO-main folder.
 
 ###### Octave
 
@@ -192,10 +192,10 @@ If you run into any problems, please open an issue [here](https://github.com/GPa
 
 #### **macOS**
 
-First, open the `Terminal` and start conda with `source /opt/miniconda3/bin/activate`. Then navigate to the location of the LANDO-master folder by using the `cd` command. For this example, we assume the zip file "LANDO-master" is in the "Downloads" folder:
+First, open the `Terminal` and start conda with `source /opt/miniconda3/bin/activate`. Then navigate to the location of the LANDO-main folder by using the `cd` command. For this example, we assume the zip file "LANDO-main" is in the "Downloads" folder:
 
 ~~~
-cd ~/Downloads/LANDO-master
+cd ~/Downloads/LANDO-main
 ~~~
 
 If not already done, activate your conda environment in the terminal:
@@ -293,10 +293,10 @@ If you run into any problems, please open an issue [here](https://github.com/GPa
 <!-- USAGE OF LANDO -->
 ## _Run LANDO_
 
-Open your `Anaconda Powershell Prompt` or `Terminal`(and start conda). Then change to the directory of the LANDO-master repository. Activate your environment and lunch Jupyter Notebook. In our working example, we use a **Windows** machine, the `Anaconda Powershell Prompt` and the LANDO-master folder on another drive: 
+Open your `Anaconda Powershell Prompt` or `Terminal`(and start conda). Then change to the directory of the LANDO-main repository. Activate your environment and lunch Jupyter Notebook. In our working example, we use a **Windows** machine, the `Anaconda Powershell Prompt` and the LANDO-main folder on another drive: 
 
 ~~~
-> pushd E:/LANDO-master
+> pushd E:/LANDO-main
 > conda activate LANDO
 > jupyter notebook
 ~~~
