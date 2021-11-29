@@ -1,0 +1,8 @@
+IPython==7.26.0
+sos==0.22.5
+sos-notebook==0.22.6
+sos-matlab==0.18.5
+joblib==0.17.0
+xlrd==1.2.0
+ipykernel==6.0.3
+
