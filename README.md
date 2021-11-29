@@ -98,7 +98,7 @@ conda activate LANDO
 
 ### _Getting **LANDO**_
 
-Users can download **LANDO** as [ZIP](https://github.com/GPawi/LANDO/archive/refs/heads/master.zip) or clone the repository via GitHub. **Windows** users will need to unzip the downloaded item into a folder named "LANDO-master". 
+Users can download **LANDO** as [ZIP](https://github.com/GPawi/LANDO/archive/refs/heads/main.zip) or clone the repository via GitHub. **Windows** users will need to unzip the downloaded item into a folder named "LANDO-master". 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
