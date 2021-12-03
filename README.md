@@ -12,11 +12,11 @@ LANDO: Linked age-depth modeling
 ## Abount the project
 
 **LANDO** links the most commonly used age-depth modeling software in one multi-language Jupyter Notebook, known as [_SoS notebook_](https://github.com/vatlab/sos-notebook) (Peng et al., 2018). Due to its design, the notebook uses four Jupyter kernels: Python, R, Octave, and MATLAB. We implemented the following modeling systems in **LANDO**:  
-   	* [_Bacon_](https://github.com/Maarten14C/rbacon) (Blaauw and Christen, 2011),  
-   	* [_Bchron_](https://github.com/andrewcparnell/Bchron) (Haslett and Parnell, 2008; Parnell et al., 2008),  
-   	* [_clam_](https://github.com/Maarten14C/clam) (Blaauw, 2010),  
-   	* [_hamstr_](https://github.com/EarthSystemDiagnostics/hamstr) (Dolman, 2021),  
-   	* [_Undatable_](https://github.com/bryanlougheed/undatable) (Lougheed and Obrochta, 2019).  
+   	* [_Bacon_](https://github.com/Maarten14C/rbacon) (Blaauw and Christen, 2011),  
+   	* [_Bchron_](https://github.com/andrewcparnell/Bchron) (Haslett and Parnell, 2008; Parnell et al., 2008),  
+   	* [_clam_](https://github.com/Maarten14C/clam) (Blaauw, 2010),  
+   	* [_hamstr_](https://github.com/EarthSystemDiagnostics/hamstr) (Dolman, 2021),  
+   	* [_Undatable_](https://github.com/bryanlougheed/undatable) (Lougheed and Obrochta, 2019).  
 Furthermore, **LANDO** uses the [fuzzy changepoint](https://github.com/mjhollaway/Fuzzy_cpt_eval) method by Holloway et al. (2021) to evaluate the performance of modeling systems to represent lithological change based on independent proxy data. **LANDO** can run models for single or multiple sediment cores.
 
 <!-- GETTING STARTED -->
@@ -37,7 +37,7 @@ MATLAB[^1] | 2020b
 
 When you install the programming languages, make a note of where you installed them. First, we recommend to use [miniconda](https://docs.conda.io/en/latest/miniconda.html) (400 MB required disk space) to manage all necessary Python packages and to make the installation process easier. Each version of miniconda comes with a version of Python.  
 
-**Windows** users can download and install the current version of R from [CRAN](https://cran.r-project.org). [Here](https://www.gnu.org/software/octave/download) you can find the current version of Octave for your operating system. Please install Octave as administator for all users and rename the folder to "GNU_Octave" instead of "GNU Octave" in the installation process, otherwise it can cause complications.
+**Windows** users can download and install the current version of R from [CRAN](https://cran.r-project.org). [Here](https://www.gnu.org/software/octave/download) you can find the current version of Octave for your operating system. Please install Octave as administator for all users and rename the folder to "GNU_Octave" (with an underscore) instead of "GNU Octave" (without an underscore) in the installation process, otherwise it can cause complications.
 
 
 For **macOS** users we recommend installing R and Octave using `brew` in the `Terminal`:
@@ -143,7 +143,20 @@ To add the R kernel (IRkernel) to the Jupyter Notebook, first navigate in the `A
 > pushd E:/LANDO-main
 ~~~
 
->In case of an error message, substitute `./R` with `Rscript`. Alternatively, you can open R in the `Anaconda Powershell Prompt` by changing to the location of R, then use the `./R` command to activate R and then enter the two commands in between the single quotes `'`. Finally, quit R with `q()` and navigate back to the LANDO-main folder.
+In case of an error message, there are three potential solutions:  
+> a) substitute `./R` with `Rscript`.  
+
+> b) Alternatively, you can open R in the `Anaconda Powershell Prompt` by changing to the location of R, then use the `./R` command to activate R and then enter the two commands in between the single quotes `'`: 
+
+> - `install.packages("IRkernel", repos = "https://cloud.r-project.org")`  
+> - `IRkernel::installspec()`  
+
+> Finally, quit R with `q()` and navigate back to the LANDO-main folder with `pushd` or `cd`.  
+
+> c) Open "R x64 4.1.2" from your desktop or via the start menu and enter the two commands in between the single quotes:
+
+> - `install.packages("IRkernel", repos = "https://cloud.r-project.org")`  
+> - `IRkernel::installspec()`  
 
 ###### Octave
 
@@ -153,6 +166,16 @@ To ensure that the Octave kernel is linked to the installed Octave version, we h
 
 [Here](https://www.c-sharpcorner.com/article/add-a-directory-to-path-environment-variable-in-windows-10/) is an explanation of how to add the directory to the path. In our working example the directory was `C:\PROGRA~1\GNU_Octave\Octave-6.4.0\mingw64\bin\`. 
 Later on, in case the Octave kernel isn't connected to the octave-cli executable, it is possible to add a new variable to the users variables with the name `OCTAVE_EXECUTABLE` and the value `C:\PROGRA~1\GNU_Octave\Octave-6.4.0\mingw64\bin\octave-cli.exe`.
+
+After that please open `GNU Octave (GUI)` from your desktop or the start menu and install the following five packages within the GUI. The installation process can take a while.
+
+~~~
+> pkg install -forge io
+> pkg install -forge statistics
+> pkg install -forge dataframe
+> pkg install -forge struct
+> pkg install -forge parallel
+~~~
 
 ###### Kernels
 
@@ -172,7 +195,7 @@ Available kernels:
 	sos
 ~~~
 
-To ensure that your kernels work with the corrected kernel version of _SoS notebook_, copy the file from the **LANDO** repository to the directory of the _SoS notebook_ in your miniconda installation. In our working example the `{destination path}` was `C:\Miniconda3\envs\LANDO\lib\site-packages\sos_notebook`. 
+To ensure that your kernels work with the corrected kernel version of _SoS notebook_, copy the file from the **LANDO** repository to the directory of the _SoS notebook_ in your miniconda installation. In our working example the `{destination path}` was `C:\Miniconda3\envs\LANDO\lib\site-packages\sos_notebook`. Please ensure that you are still in the **LANDO** repository, otherwise navigate to it with `pushd` or `cd`. 
 
 ~~~
 copy "src\kernel.py" "{destination_path}"
@@ -180,13 +203,13 @@ copy "src\kernel.py" "{destination_path}"
 
 ###### Package installation
 
-Then open the Jupyter Notebook by typing into the terminal:
+Then open the Jupyter Notebook by typing into the `Anaconda Powershell Prompt`:
 
 ~~~
 jupyter notebook
 ~~~
 
-Click on the `Install-requirements.ipynb` notebook and execute all cells within this notebook. This can take up to an hour. After everything is installed, you can close the notebook using `File` --> `Close and halt`. **LANDO** should be now ready for use.
+Click on the `Install-requirements.ipynb` notebook and execute the first two cells with R code within this notebook. This can take up to an hour. After everything is installed, you can close the notebook using `File` --> `Close and halt`. **LANDO** should be now ready for use.
 
 If you run into any problems, please open an issue [here](https://github.com/GPawi/LANDO/issues).
 
