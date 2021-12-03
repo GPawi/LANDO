@@ -37,7 +37,7 @@ MATLAB[^1] | 2020b
 
 When you install the programming languages, make a note of where you installed them. First, we recommend to use [miniconda](https://docs.conda.io/en/latest/miniconda.html) (400 MB required disk space) to manage all necessary Python packages and to make the installation process easier. Each version of miniconda comes with a version of Python.  
 
-**Windows** users can download and install the current version of R from [CRAN](https://cran.r-project.org). [Here](https://www.gnu.org/software/octave/download) you can find the current version of Octave for your operating system. Please install Octave as administator for all users, otherwise it can cause complications.
+**Windows** users can download and install the current version of R from [CRAN](https://cran.r-project.org). [Here](https://www.gnu.org/software/octave/download) you can find the current version of Octave for your operating system. Please install Octave as administator for all users and rename the folder to "GNU_Octave" instead of "GNU Octave" in the installation process, otherwise it can cause complications.
 
 
 For **macOS** users we recommend installing R and Octave using `brew` in the `Terminal`:
@@ -149,9 +149,9 @@ To add the R kernel (IRkernel) to the Jupyter Notebook, first navigate in the `A
 
 To ensure that the Octave kernel is linked to the installed Octave version, we have to follow the instructions on [GitHub](https://github.com/Calysto/octave_kernel): 
 
->We require the octave-cli executable to run the kernel. Add that executable's directory to the PATH environment variable or use the OCTAVE_EXECUTABLE to point to the executable itself. Note that on Octave 6.4.0 on Windows, the executable is in "Octave-6.4.0\mingw64\bin".
+>We require the octave-cli executable to run the kernel. Add that executable's directory to the PATH environment variable or use the OCTAVE_EXECUTABLE to point to the executable itself. Note that on Octave 6.4.0 on Windows, the executable is in "Octave-6.4.0\mingw64\bin\".
 
-Before adding the path, we renamed the folder containing Octave from "GNU Octave" to "GNU_Octave" to make it easier to access within the Windows environment. [Here](https://www.c-sharpcorner.com/article/add-a-directory-to-path-environment-variable-in-windows-10/) is an explanation of how to add the directory to the path. In our working example the directory was `C:\PROGRA~1\GNU_Octave\Octave-6.4.0\mingw64\bin\`. 
+[Here](https://www.c-sharpcorner.com/article/add-a-directory-to-path-environment-variable-in-windows-10/) is an explanation of how to add the directory to the path. In our working example the directory was `C:\PROGRA~1\GNU_Octave\Octave-6.4.0\mingw64\bin\`. 
 Later on, in case the Octave kernel isn't connected to the octave-cli executable, it is possible to add a new variable to the users variables with the name `OCTAVE_EXECUTABLE` and the value `C:\PROGRA~1\GNU_Octave\Octave-6.4.0\mingw64\bin\octave-cli.exe`.
 
 ###### Kernels
