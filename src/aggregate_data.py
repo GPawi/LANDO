@@ -560,7 +560,7 @@ class AggDataReservoir(object):
         if which is None:
             self.which = input("Would you like to add the reservoir values to all samples ('all'), to only bulk samples ('bulk'), or disregard the values ('without')? ")
         ####
-        if which == 'all':
+        if self.which == 'all':
             for key in self.reservoir_values.keys():
                 for i, r in self.all_ages.iterrows():
                     if (self.all_ages.at[i, 'coreid'] == key) and ('14C' in self.all_ages.at[i, 'material_category']):
@@ -569,7 +569,7 @@ class AggDataReservoir(object):
                 self.dttp = 'Yes' ## Needs to be more sophisticated for multiple sediment cores, to answer which core had a transformation
             if bool(self.reservoir_values) == False:
                 self.dttp = 'No' 
-        elif which == 'bulk':
+        elif self.which == 'bulk':
             for key in self.reservoir_values.keys():
                 for i, r in self.all_ages.iterrows():
                     if (self.all_ages.at[i, 'coreid'] == key) and ('14C sediment' in self.all_ages.at[i, 'material_category']):
