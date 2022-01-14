@@ -111,7 +111,7 @@ class AgeFromDBMultiCores(object):
         self.__db_all_ages[['coreid','compositedepth']] = self.__db_all_ages['measurementid'].str.split(' ', n = 1, expand = True)
         self.__db_all_ages = self.__db_all_ages.reset_index(drop = True)
         self.__db_all_ages = self.__db_all_ages[self.__db_all_ages.duplicated(['coreid'], keep = False) == True] 
-        self.__db_all_ages['compositedepth'] = self.__db_all_ages['compositedepth'].astype(np.float32)
+        self.__db_all_ages['compositedepth'] = self.__db_all_ages['compositedepth'].astype(float)
         self.__db_all_ages = self.__db_all_ages.sort_values(by = ['coreid','compositedepth'], ignore_index = True)
         
     def get_dates(self, surface_uncertainty = 5):
@@ -232,7 +232,7 @@ class AgeFromDBOneCore(object):
         self.__db_all_surface = self.__db_all_surface.append(self.__surface_df)
         self.__db_all_surface.reset_index(drop = True)
         self.__db_all_ages = pd.concat([self.__db_all_ages, self.__db_all_surface])
-        self.__db_all_ages['compositedepth'] = self.__db_all_ages['compositedepth'].astype(np.float32)
+        self.__db_all_ages['compositedepth'] = self.__db_all_ages['compositedepth'].astype(float)
         self.__db_all_ages = self.__db_all_ages.sort_values(by = ['compositedepth'], ignore_index = True)
         self.__db_all_ages.reset_index(drop = True, inplace = True)
         
@@ -373,7 +373,7 @@ class AgeFromFileOneCore(object):
                                                     0,
                                                    f'{coreid} 0']]), columns = self.__input_age_one_core_columns)
         self.__file_all_ages_one_core = pd.concat([self.__input_age_one_core, self.__surface_df])
-        self.__file_all_ages_one_core['compositedepth'] = self.__file_all_ages_one_core['compositedepth'].astype(np.float32)
+        self.__file_all_ages_one_core['compositedepth'] = self.__file_all_ages_one_core['compositedepth'].astype(float)
         self.__file_all_ages_one_core = self.__file_all_ages_one_core.sort_values(by = ['compositedepth'], ignore_index = True)
         self.__file_all_ages_one_core.reset_index(drop = True, inplace = True)
     
@@ -399,7 +399,7 @@ class AgeFromFileOneCore(object):
         self.all_coreid_list = list([self.coreid])
         self.__core_lengths = input('How long was the entire core in centimeter (cm)? ')
         self.all_core_lengths = pd.DataFrame([[self.coreid,self.__core_lengths]], columns = ['coreid', 'corelength'])
-        self.all_core_lengths['corelength'] = self.all_core_lengths['corelength'].astype(np.float32)
+        self.all_core_lengths['corelength'] = self.all_core_lengths['corelength'].astype(float)
         self.engine = 'No Database'
         self.all_ages = self.all_ages.astype(dtype = {'labid' : str,
                                                       'age' : int,
@@ -513,7 +513,7 @@ class AgeFromFileMultiCores(object):
                                                               'Expedition Year': 'expeditionyear',
                                                               'Core Length (cm)' : 'corelength'}, inplace = True)
             self.__core_lengths = self.__input_metadata_multi_cores[['coreid', 'corelength']].copy()
-            self.__core_lengths['corelength'] = self.__core_lengths['corelength'].astype(np.float32)
+            self.__core_lengths['corelength'] = self.__core_lengths['corelength'].astype(float)
             self.__file_all_expedition_age = self.__input_metadata_multi_cores[['coreid', 'expeditionyear']].copy()
             self.__file_all_expedition_age['expeditionyear'] = self.__file_all_expedition_age['expeditionyear'].astype(int)
         except KeyError:
@@ -549,7 +549,7 @@ class AgeFromFileMultiCores(object):
             self.__file_all_surface = self.__file_all_surface.append(self.__surface_df)
         self.__file_all_surface.reset_index(drop = True)
         self.__file_all_ages_multi_cores = pd.concat([self.__input_age_multi_cores, self.__file_all_surface])
-        self.__file_all_ages_multi_cores['compositedepth'] = self.__file_all_ages_multi_cores['compositedepth'].astype(np.float32)
+        self.__file_all_ages_multi_cores['compositedepth'] = self.__file_all_ages_multi_cores['compositedepth'].astype(float)
         self.__file_all_ages_multi_cores = self.__file_all_ages_multi_cores.sort_values(by = ['coreid','compositedepth'], ignore_index = True)
         
     
