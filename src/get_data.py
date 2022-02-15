@@ -9,14 +9,13 @@ github: GPawi
 
 import numpy as np
 import pandas as pd
+import os
 import sqlalchemy
 import getpass
 import xlrd
 xlrd.xlsx.ensure_elementtree_imported(False, None)
 xlrd.xlsx.Element_has_iter = True
-from IPython import get_ipython
-from tkinter import Tk
-from tkinter.filedialog import askopenfilename
+from ipyfilechooser import FileChooser
 from psycopg2.extras import NumericRange
 from sqlalchemy.exc import IntegrityError
 
@@ -263,7 +262,13 @@ class AgeFromFileOneCore(object):
         @filename: string with the address to file on system
         """
         self.__filename = filename
-    
+        if self.__filename == None:
+            __data_dir = os.path.abspath('./input_files')
+            self.fc = FileChooser(__data_dir)
+            self.fc.use_dir_icons = True
+            self.fc.filter_pattern = ['*.xlsx']
+            display(self.fc)
+                   
     def __select_data_one_core(self):
         """
         Helper function to store age determination data from file in dictionary
@@ -272,29 +277,13 @@ class AgeFromFileOneCore(object):
         @self.__input_dictionary: dictionary with age determination data indexed by 'Age' 
         (as per naming convention of example spreadsheet / input file)
         """
-        __filename = self.__filename        
-        if __filename == None: 
-            root = Tk()
-            root.withdraw()
-            root.call('wm', 'attributes', '.', '-topmost', True)
-            __filename = askopenfilename()
-            get_ipython().run_line_magic('gui', 'tk')
-            xl = pd.ExcelFile(__filename)
-            self.__input_dictionary = {}
-            if 'Age' in xl.sheet_names:
-                for sheet in xl.sheet_names:
-                    self.__input_dictionary[f'{sheet}']= pd.read_excel(xl,sheet_name=sheet)
-            else:
-                raise Exception('There is no sheet named "Age" in selected file')
-                
+        xl = pd.ExcelFile(self.__filename)
+        self.__input_dictionary = {}
+        if 'Age' in xl.sheet_names:
+            for sheet in xl.sheet_names:
+                self.__input_dictionary[f'{sheet}']= pd.read_excel(xl,sheet_name=sheet)
         else:
-            xl = pd.ExcelFile(__filename)
-            self.__input_dictionary = {}
-            if 'Age' in xl.sheet_names:
-                for sheet in xl.sheet_names:
-                    self.__input_dictionary[f'{sheet}']= pd.read_excel(xl,sheet_name=sheet)
-            else:
-                raise Exception('There is no sheet named "Age" in selected file')
+            raise Exception('There is no sheet named "Age" in selected file')
                 
     def __age_input_one_core(self):
         """
@@ -392,6 +381,8 @@ class AgeFromFileOneCore(object):
         @self.engine: string saying that SQLalchemy specific engine for PostgreSQL is not available
         """
         self.__surface_uncertainty = surface_uncertainty
+        if self.__filename == None:
+            self.__filename = self.fc.value
         self.__select_data_one_core()
         self.__age_input_one_core()
         self.__adding_surface_sample_ffoc()
@@ -406,6 +397,7 @@ class AgeFromFileOneCore(object):
                                                       'age_error' : int,
                                                       'reservoir_age' : int,
                                                       'reservoir_error': int})
+
                
 class AgeFromFileMultiCores(object):
     def __init__(self, filename = None):
@@ -414,6 +406,12 @@ class AgeFromFileMultiCores(object):
         @filename: string with the address to file on system
         """
         self.__filename = filename
+        if self.__filename == None:
+            __data_dir = os.path.abspath('./input_files')
+            self.fc = FileChooser(__data_dir)
+            self.fc.use_dir_icons = True
+            self.fc.filter_pattern = ['*.xlsx']
+            display(self.fc)
         
     def __select_data_multi_cores(self):
         """
@@ -424,29 +422,13 @@ class AgeFromFileMultiCores(object):
         and metadata ('CoreID' and 'Expedition Year') index by 'Metadata'
         (as per naming convention of example spreadsheet / input file)
         """
-        __filename = self.__filename        
-        if __filename == None: 
-            root = Tk()
-            root.withdraw()
-            root.call('wm', 'attributes', '.', '-topmost', True)
-            __filename = askopenfilename()
-            get_ipython().run_line_magic('gui', 'tk')
-            xl = pd.ExcelFile(__filename)
-            self.__input_dictionary = {}
-            if 'Age' in xl.sheet_names and 'Metadata' in xl.sheet_names:
-                for sheet in xl.sheet_names:
-                    self.__input_dictionary[f'{sheet}']= pd.read_excel(xl,sheet_name=sheet)
-            else:
-                raise Exception('The naming convention within selected file is not correct. Please rename the tabs to "Age" and "Metadata".')
-                
+        xl = pd.ExcelFile(self.__filename)
+        self.__input_dictionary = {}
+        if 'Age' in xl.sheet_names and 'Metadata' in xl.sheet_names:
+            for sheet in xl.sheet_names:
+                self.__input_dictionary[f'{sheet}']= pd.read_excel(xl,sheet_name=sheet)
         else:
-            xl = pd.ExcelFile(__filename)
-            self.__input_dictionary = {}
-            if 'Age' in xl.sheet_names and 'Metadata' in xl.sheet_names:
-                for sheet in xl.sheet_names:
-                    self.__input_dictionary[f'{sheet}']= pd.read_excel(xl,sheet_name=sheet)
-            else:
-                raise Exception('The naming convention within selected file is not correct. Please rename the tabs to "Age" and "Metadata".')
+            raise Exception('The naming convention within selected file is not correct. Please rename the tabs to "Age" and "Metadata".')
     
     def __age_input_multi_cores(self):
         """
@@ -567,6 +549,8 @@ class AgeFromFileMultiCores(object):
         @self.engine: string saying that SQLalchemy specific engine for PostgreSQL is not available
         """
         self.__surface_uncertainty = surface_uncertainty
+        if self.__filename == None:
+            self.__filename = self.fc.value
         self.__select_data_multi_cores()
         self.__age_input_multi_cores()
         self.__metadata_input_multi_cores()
@@ -686,6 +670,12 @@ class ProxyFromFile(object):
         @filename: string with the address to file on system
         """
         self.__filename = filename
+        if self.__filename == None:
+            __data_dir = os.path.abspath('./input_files')
+            self.fc = FileChooser(__data_dir)
+            self.fc.use_dir_icons = True
+            self.fc.filter_pattern = ['*.xlsx']
+            display(self.fc)
      
     def __proxy_data_multi_cores(self):
         """
@@ -694,23 +684,10 @@ class ProxyFromFile(object):
         returns:
         @self.__proxy_dictionary: dictionary with proxy data indexed by their CoreID
         """
-        __filename = self.__filename        
-        if __filename == None: 
-            root = Tk()
-            root.withdraw()
-            root.call('wm', 'attributes', '.', '-topmost', True)
-            __filename = askopenfilename()
-            get_ipython().run_line_magic('gui', 'tk')
-            xl = pd.ExcelFile(__filename)
-            self.__proxy_dictionary = {}
-            for sheet in xl.sheet_names:
-                self.__proxy_dictionary[f'{sheet}']= pd.read_excel(xl,sheet_name=sheet)
-                
-        else:
-            xl = pd.ExcelFile(__filename)
-            self.__proxy_dictionary = {}
-            for sheet in xl.sheet_names:
-                self.__proxy_dictionary[f'{sheet}']= pd.read_excel(xl,sheet_name=sheet)
+        xl = pd.ExcelFile(self.__filename)
+        self.__proxy_dictionary = {}
+        for sheet in xl.sheet_names:
+            self.__proxy_dictionary[f'{sheet}']= pd.read_excel(xl,sheet_name=sheet)
            
     def get_proxy(self):
         """
@@ -720,6 +697,8 @@ class ProxyFromFile(object):
         @self.name: dictionary with proxy name for each coreid
         @self.proxy_ts: dictionary containing time-series-like dataframe with proxy data with columns for composite depth and value
         """
+        if self.__filename == None:
+            self.__filename = self.fc.value
         self.__proxy_data_multi_cores()
         self.name = {}
         self.proxy_ts = {}
