@@ -335,6 +335,28 @@ class AgeFromFileOneCore(object):
         except KeyError:
             raise Exception(f'No age data found!')
             
+    def __metadata_input_one_cores(self):
+        """
+        Helper function to transform metadata into one dataframe for core length and one variable for expediton year to be comparable to database implementation
+        
+        returns:
+        @self.__core_lengths: dataframe with two columns CoreID and core length
+        @self.__expedition_year: integer value with expedition year
+        """
+        __input_dictionary = self.__input_dictionary
+        try:
+            self.__input_metadata_one_core = __input_dictionary['Metadata']
+            self.__input_metadata_one_core.rename(columns={'CoreID':'coreid',
+                                                           'Expedition Year': 'expeditionyear',
+                                                           'Core Length (cm)' : 'corelength'}, inplace = True)
+            self.__core_lengths = self.__input_metadata_one_core[['coreid', 'corelength']].copy()
+            self.__core_lengths['corelength'] = self.__core_lengths['corelength'].astype(float)
+            self.__expedition_year = self.__input_metadata_one_core['expeditionyear'][0].astype(int).copy()
+        except KeyError:
+            self.__expedition_year = input('In which year was the sediment core retrieved? (e.g., 2020) ')
+            self.__core_lengths = input('How long was the entire core in centimeter (cm)? ')
+            self.all_core_lengths = pd.DataFrame([[self.coreid,self.__core_lengths]], columns = ['coreid', 'corelength'])
+            self.all_core_lengths['corelength'] = self.all_core_lengths['corelength'].astype(float) 
             
     def __adding_surface_sample_ffoc(self):
         """
@@ -344,7 +366,6 @@ class AgeFromFileOneCore(object):
         @self.__file_all_ages_one_core: altered dataframe with all age determination data plus added surface sample
         """
         coreid = self.coreid
-        self.__expedition_year = input('In which year was the sediment core retrieved? (e.g., 2020) ')
         self.__expedition_year = 1950 - int(self.__expedition_year)
         self.__input_age_one_core_columns = self.__input_age_one_core.columns
         self.__surface_df = pd.DataFrame(np.array([[coreid,
@@ -385,12 +406,11 @@ class AgeFromFileOneCore(object):
             self.__filename = self.fc.value
         self.__select_data_one_core()
         self.__age_input_one_core()
+        self.__metadata_input_one_cores()
         self.__adding_surface_sample_ffoc()
         self.all_ages = self.__file_all_ages_one_core
         self.all_coreid_list = list([self.coreid])
-        self.__core_lengths = input('How long was the entire core in centimeter (cm)? ')
-        self.all_core_lengths = pd.DataFrame([[self.coreid,self.__core_lengths]], columns = ['coreid', 'corelength'])
-        self.all_core_lengths['corelength'] = self.all_core_lengths['corelength'].astype(float)
+        self.all_core_lengths = self.__core_lengths
         self.engine = 'No Database'
         self.all_ages = self.all_ages.astype(dtype = {'labid' : str,
                                                       'age' : int,
