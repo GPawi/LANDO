@@ -171,13 +171,13 @@ class AgeFromDBMultiCores(object):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
             
             # Second case: 14C sediment in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C sediment' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C sediment') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = self.default_curve
             
             # Third case: 14C terrestrial fossil in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 if self.hemisphere == 'NH':
@@ -186,7 +186,7 @@ class AgeFromDBMultiCores(object):
                     self.__all_ages_cc.at[i, 'calibration_curve'] = 'SHCal20'
             
             # Fourth case: 14C marine fossil in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = 'Marine20'
@@ -416,13 +416,13 @@ class AgeFromDBOneCore(object):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
             
             # Second case: 14C sediment in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C sediment' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C sediment') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = self.default_curve
             
             # Third case: 14C terrestrial fossil in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 if self.hemisphere == 'NH':
@@ -431,7 +431,7 @@ class AgeFromDBOneCore(object):
                     self.__all_ages_cc.at[i, 'calibration_curve'] = 'SHCal20'
             
             # Fourth case: 14C marine fossil in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = 'Marine20'
@@ -703,13 +703,13 @@ class AgeFromFileOneCore(object):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
             
             # Second case: 14C sediment in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C sediment' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C sediment') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = self.default_curve
             
             # Third case: 14C terrestrial fossil in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 if self.hemisphere == 'NH':
@@ -718,7 +718,7 @@ class AgeFromFileOneCore(object):
                     self.__all_ages_cc.at[i, 'calibration_curve'] = 'SHCal20'
             
             # Fourth case: 14C marine fossil in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = 'Marine20'
@@ -991,13 +991,13 @@ class AgeFromFileMultiCores(object):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
             
             # Second case: 14C sediment in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C sediment' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C sediment') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = self.default_curve
             
             # Third case: 14C terrestrial fossil in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 if self.hemisphere == 'NH':
@@ -1006,7 +1006,7 @@ class AgeFromFileMultiCores(object):
                     self.__all_ages_cc.at[i, 'calibration_curve'] = 'SHCal20'
             
             # Fourth case: 14C marine fossil in boundaries of calibration curve
-            elif self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil' and \ 
+            elif (self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) <= 50000 and (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 75 and \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):
                 self.__all_ages_cc.at[i, 'calibration_curve'] = 'Marine20'
