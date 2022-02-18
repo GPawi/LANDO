@@ -423,12 +423,29 @@ class AgeFromFileOneCore(object):
         
         
     def select_calibration_curve(self, default_curve = 'IntCal20', hemisphere = 'NH',  user_selection = True):
-        """xxx"""
-        ### CHECK IF CURVE IS SPELT CORRECTLY AND HEMISPHERE IS EITHER SH OR NH
-        ###
+        """
+        Function to add a calibration curve to the age determination data
+        
+        parameters:
+        @default_curve: string with calibration curve that should be used for samples, such as 'IntCal20', 'Marine20', 'SHCal20', or 'None'; default value: 'IntCal20'
+        @hemisphere: string with abbreviation of hemisphere from which the samples are from - 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere; default value: 'NH'
+        @user_selection: boolean value, if user wants to change the calibration curve selection manually; default value: True
+        
+        returns:
+        @self.__all_ages_cc: dataframe with all age determination data plus automatically added calibration curve
+        @self.sheet: sheet widget with input changes by user
+        """
         self.default_curve = default_curve
         self.user_selection = user_selection
         self.hemisphere = hemisphere
+        # Check input values
+        possible_curves = ['IntCal20', 'Marine20', 'SHCal20', 'None']
+        check_curves = [ele for ele in possible_curves if (ele in self.default_curve)]
+        if bool(check_curves) == False:
+            raise Exception("Please provide one of the following curves as default curve: 'IntCal20', 'Marine20', 'SHCal20', or 'None'")
+        if self.hemisphere != 'NH' and self.hemisphere != 'SH':
+            raise Exception("Please provie one of the following abbreviations for hemisphere: 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere")
+        # Copy exisiting age dataframe
         self.__all_ages_cc = self.all_ages.copy()
         # Initialize calibration curve column
         self.__all_ages_cc['calibration_curve'] = None
@@ -487,7 +504,12 @@ class AgeFromFileOneCore(object):
             display(self.sheet)
     
     def add_calibration_curve(self):
-        """xxx"""
+        """
+        Function to update information on calibration curve
+        
+        returns:
+        @self.all_ages: dataframe with all age determination data 
+        """
         if self.user_selection == True:
             df_sheet_user_input = ipysheet.to_dataframe(self.sheet)
             df_sheet_user_input = df_sheet_user_input[['MeasurementID', 'LabID', 'Calibration Curve']]
@@ -665,6 +687,107 @@ class AgeFromFileMultiCores(object):
         
         self.all_core_lengths = self.__core_lengths
         self.engine = 'No Database'   
+        
+    def select_calibration_curve(self, default_curve = 'IntCal20', hemisphere = 'NH',  user_selection = True):
+        """
+        Function to add a calibration curve to the age determination data
+        
+        parameters:
+        @default_curve: string with calibration curve that should be used for samples, such as 'IntCal20', 'Marine20', 'SHCal20', or 'None'; default value: 'IntCal20'
+        @hemisphere: string with abbreviation of hemisphere from which the samples are from - 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere; default value: 'NH'
+        @user_selection: boolean value, if user wants to change the calibration curve selection manually; default value: True
+        
+        returns:
+        @self.__all_ages_cc: dataframe with all age determination data plus automatically added calibration curve
+        @self.sheet: sheet widget with input changes by user
+        """
+        self.default_curve = default_curve
+        self.user_selection = user_selection
+        self.hemisphere = hemisphere
+        # Check input values
+        possible_curves = ['IntCal20', 'Marine20', 'SHCal20', 'None']
+        check_curves = [ele for ele in possible_curves if (ele in self.default_curve)]
+        if bool(check_curves) == False:
+            raise Exception("Please provide one of the following curves as default curve: 'IntCal20', 'Marine20', 'SHCal20', or 'None'")
+        if self.hemisphere != 'NH' and self.hemisphere != 'SH':
+            raise Exception("Please provie one of the following abbreviations for hemisphere: 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere")
+        # Copy exisiting age dataframe
+        self.__all_ages_cc = self.all_ages.copy()
+        # Initialize calibration curve column
+        self.__all_ages_cc['calibration_curve'] = None
+        # Add values based on material category and default curve
+        for i,r in self.__all_ages_cc.iterrows():
+            if self.__all_ages_cc.at[i, 'material_description'] == 'derived surface age':
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+            elif self.__all_ages_cc.at[i, 'material_category'] == '14C sediment':
+                self.__all_ages_cc.at[i, 'calibration_curve'] = self.default_curve
+            elif self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil':
+                if self.hemisphere == 'NH':
+                    self.__all_ages_cc.at[i, 'calibration_curve'] = 'IntCal20'
+                else:
+                    self.__all_ages_cc.at[i, 'calibration_curve'] = 'SHCal20'
+            elif self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil':
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'Marine20'
+            else:
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+        # Allow user to change the calibration curve
+        if self.user_selection == True:
+            col_for_selection = ['measurementid',
+                                 'labid',
+                                 'material_category', 
+                                 'material_description', 
+                                 'age', 
+                                 'age_error', 
+                                 'calibration_curve']
+            view_ages = self.__all_ages_cc[~self.__all_ages_cc.labid.str.contains('_Surface')].copy()
+            view_ages = view_ages[col_for_selection]
+            view_ages.reset_index(inplace = True, drop = True)
+            self.sheet = from_dataframe(view_ages)
+            col_headers = ['MeasurementID',
+                           'LabID',
+                           'Category',
+                           'Material',
+                           'Uncalibrated Age (yr BP)',
+                           'Uncalibrated Age Error (+/- yr)',
+                           'Calibration Curve'
+                          ]
+            self.sheet.column_headers = col_headers
+            choices_curve = ['IntCal20',
+                            'Marine20',
+                            'SHCal20',
+                            'None']
+            for header in range(len(col_headers)):
+                if header == col_headers.index('Calibration Curve'):
+                    self.sheet.cells[header].style['backgroundColor'] = '#eefbdd'
+                    self.sheet.cells[header].choice = choices_curve
+                    self.sheet.cells[header].type = 'dropdown'
+                    self.sheet.cells[header].send_state()
+                else:
+                    self.sheet.cells[header].read_only = True
+                    self.sheet.cells[header].squeeze_column = True
+                    self.sheet.cells[header].textAlign = 'right'
+                    self.sheet.cells[header].send_state()
+            display(self.sheet)
+    
+    def add_calibration_curve(self):
+        """
+        Function to update information on calibration curve
+        
+        returns:
+        @self.all_ages: dataframe with all age determination data 
+        """
+        if self.user_selection == True:
+            df_sheet_user_input = ipysheet.to_dataframe(self.sheet)
+            df_sheet_user_input = df_sheet_user_input[['MeasurementID', 'LabID', 'Calibration Curve']]
+            df_sheet_user_input.columns = ['measurementid', 'labid', 'calibration_curve']
+            initial_columns = self.__all_ages_cc.columns
+            self.__all_ages_cc.set_index(['measurementid','labid'], inplace=True)
+            self.__all_ages_cc.update(df_sheet_user_input.set_index(['measurementid','labid']))
+            self.__all_ages_cc.reset_index(inplace = True)
+            self.__all_ages_cc = self.__all_ages_cc[initial_columns]
+            self.all_ages = self.__all_ages_cc
+        else:
+            self.all_ages = self.__all_ages_cc
         
 class ProxyFromDB(object):
     def __init__(self, engine, coreid, proxy_group = None):
