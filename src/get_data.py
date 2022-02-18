@@ -142,7 +142,7 @@ class AgeFromDBMultiCores(object):
         Function to add a calibration curve to the age determination data
         
         parameters:
-        @default_curve: string with calibration curve that should be used for samples, such as 'IntCal20', 'Marine20', 'SHCal20', or 'None'; default value: 'IntCal20'
+        @default_curve: string with calibration curve that should be used for samples, such as 'IntCal20', 'Marine20', 'SHCal20', or 'none'; default value: 'IntCal20'
         @hemisphere: string with abbreviation of hemisphere from which the samples are from - 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere; default value: 'NH'
         @user_selection: boolean value, if user wants to change the calibration curve selection manually; default value: True
         
@@ -154,10 +154,10 @@ class AgeFromDBMultiCores(object):
         self.user_selection = user_selection
         self.hemisphere = hemisphere
         # Check input values
-        possible_curves = ['IntCal20', 'Marine20', 'SHCal20', 'None']
+        possible_curves = ['IntCal20', 'Marine20', 'SHCal20', 'none']
         check_curves = [ele for ele in possible_curves if (ele in self.default_curve)]
         if bool(check_curves) == False:
-            raise Exception("Please provide one of the following curves as default curve: 'IntCal20', 'Marine20', 'SHCal20', or 'None'")
+            raise Exception("Please provide one of the following curves as default curve: 'IntCal20', 'Marine20', 'SHCal20', or 'none'")
         if self.hemisphere != 'NH' and self.hemisphere != 'SH':
             raise Exception("Please provie one of the following abbreviations for hemisphere: 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere")
         # Copy exisiting age dataframe
@@ -168,7 +168,7 @@ class AgeFromDBMultiCores(object):
         for i,r in self.__all_ages_cc.iterrows():
             # First case: surface sample without calibration
             if self.__all_ages_cc.at[i, 'material_description'] == 'derived surface age':
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
             
             # Second case: 14C sediment in boundaries of calibration curve
             elif (self.__all_ages_cc.at[i, 'material_category'] == '14C sediment') and \
@@ -195,11 +195,11 @@ class AgeFromDBMultiCores(object):
             elif  (self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil' or self.__all_ages_cc.at[i, 'material_category'] == '14C sediment' or self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 50000 or (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) < 75 or \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) < (1950 - datetime.datetime.now().year))):
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
             
             # Sixth case: Everything else :) 
             else:
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
                 
         # Allow user to change the calibration curve
         if self.user_selection == True:
@@ -226,7 +226,7 @@ class AgeFromDBMultiCores(object):
             choices_curve = ['IntCal20',
                             'Marine20',
                             'SHCal20',
-                            'None']
+                            'none']
             for header in range(len(col_headers)):
                 if header == col_headers.index('Calibration Curve'):
                     self.sheet.cells[header].style['backgroundColor'] = '#eefbdd'
@@ -387,7 +387,7 @@ class AgeFromDBOneCore(object):
         Function to add a calibration curve to the age determination data
         
         parameters:
-        @default_curve: string with calibration curve that should be used for samples, such as 'IntCal20', 'Marine20', 'SHCal20', or 'None'; default value: 'IntCal20'
+        @default_curve: string with calibration curve that should be used for samples, such as 'IntCal20', 'Marine20', 'SHCal20', or 'none'; default value: 'IntCal20'
         @hemisphere: string with abbreviation of hemisphere from which the samples are from - 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere; default value: 'NH'
         @user_selection: boolean value, if user wants to change the calibration curve selection manually; default value: True
         
@@ -399,10 +399,10 @@ class AgeFromDBOneCore(object):
         self.user_selection = user_selection
         self.hemisphere = hemisphere
         # Check input values
-        possible_curves = ['IntCal20', 'Marine20', 'SHCal20', 'None']
+        possible_curves = ['IntCal20', 'Marine20', 'SHCal20', 'none']
         check_curves = [ele for ele in possible_curves if (ele in self.default_curve)]
         if bool(check_curves) == False:
-            raise Exception("Please provide one of the following curves as default curve: 'IntCal20', 'Marine20', 'SHCal20', or 'None'")
+            raise Exception("Please provide one of the following curves as default curve: 'IntCal20', 'Marine20', 'SHCal20', or 'none'")
         if self.hemisphere != 'NH' and self.hemisphere != 'SH':
             raise Exception("Please provie one of the following abbreviations for hemisphere: 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere")
         # Copy exisiting age dataframe
@@ -413,7 +413,7 @@ class AgeFromDBOneCore(object):
         for i,r in self.__all_ages_cc.iterrows():
             # First case: surface sample without calibration
             if self.__all_ages_cc.at[i, 'material_description'] == 'derived surface age':
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
             
             # Second case: 14C sediment in boundaries of calibration curve
             elif (self.__all_ages_cc.at[i, 'material_category'] == '14C sediment') and \
@@ -440,11 +440,11 @@ class AgeFromDBOneCore(object):
             elif  (self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil' or self.__all_ages_cc.at[i, 'material_category'] == '14C sediment' or self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 50000 or (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) < 75 or \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) < (1950 - datetime.datetime.now().year))):
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
             
             # Sixth case: Everything else :) 
             else:
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
                 
         # Allow user to change the calibration curve
         if self.user_selection == True:
@@ -471,7 +471,7 @@ class AgeFromDBOneCore(object):
             choices_curve = ['IntCal20',
                             'Marine20',
                             'SHCal20',
-                            'None']
+                            'none']
             for header in range(len(col_headers)):
                 if header == col_headers.index('Calibration Curve'):
                     self.sheet.cells[header].style['backgroundColor'] = '#eefbdd'
@@ -674,7 +674,7 @@ class AgeFromFileOneCore(object):
         Function to add a calibration curve to the age determination data
         
         parameters:
-        @default_curve: string with calibration curve that should be used for samples, such as 'IntCal20', 'Marine20', 'SHCal20', or 'None'; default value: 'IntCal20'
+        @default_curve: string with calibration curve that should be used for samples, such as 'IntCal20', 'Marine20', 'SHCal20', or 'none'; default value: 'IntCal20'
         @hemisphere: string with abbreviation of hemisphere from which the samples are from - 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere; default value: 'NH'
         @user_selection: boolean value, if user wants to change the calibration curve selection manually; default value: True
         
@@ -686,10 +686,10 @@ class AgeFromFileOneCore(object):
         self.user_selection = user_selection
         self.hemisphere = hemisphere
         # Check input values
-        possible_curves = ['IntCal20', 'Marine20', 'SHCal20', 'None']
+        possible_curves = ['IntCal20', 'Marine20', 'SHCal20', 'none']
         check_curves = [ele for ele in possible_curves if (ele in self.default_curve)]
         if bool(check_curves) == False:
-            raise Exception("Please provide one of the following curves as default curve: 'IntCal20', 'Marine20', 'SHCal20', or 'None'")
+            raise Exception("Please provide one of the following curves as default curve: 'IntCal20', 'Marine20', 'SHCal20', or 'none'")
         if self.hemisphere != 'NH' and self.hemisphere != 'SH':
             raise Exception("Please provie one of the following abbreviations for hemisphere: 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere")
         # Copy exisiting age dataframe
@@ -700,7 +700,7 @@ class AgeFromFileOneCore(object):
         for i,r in self.__all_ages_cc.iterrows():
             # First case: surface sample without calibration
             if self.__all_ages_cc.at[i, 'material_description'] == 'derived surface age':
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
             
             # Second case: 14C sediment in boundaries of calibration curve
             elif (self.__all_ages_cc.at[i, 'material_category'] == '14C sediment') and \
@@ -727,11 +727,11 @@ class AgeFromFileOneCore(object):
             elif  (self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil' or self.__all_ages_cc.at[i, 'material_category'] == '14C sediment' or self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 50000 or (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) < 75 or \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) < (1950 - datetime.datetime.now().year))):
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
             
             # Sixth case: Everything else :) 
             else:
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
                 
         # Allow user to change the calibration curve
         if self.user_selection == True:
@@ -758,7 +758,7 @@ class AgeFromFileOneCore(object):
             choices_curve = ['IntCal20',
                             'Marine20',
                             'SHCal20',
-                            'None']
+                            'none']
             for header in range(len(col_headers)):
                 if header == col_headers.index('Calibration Curve'):
                     self.sheet.cells[header].style['backgroundColor'] = '#eefbdd'
@@ -962,7 +962,7 @@ class AgeFromFileMultiCores(object):
         Function to add a calibration curve to the age determination data
         
         parameters:
-        @default_curve: string with calibration curve that should be used for samples, such as 'IntCal20', 'Marine20', 'SHCal20', or 'None'; default value: 'IntCal20'
+        @default_curve: string with calibration curve that should be used for samples, such as 'IntCal20', 'Marine20', 'SHCal20', or 'none'; default value: 'IntCal20'
         @hemisphere: string with abbreviation of hemisphere from which the samples are from - 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere; default value: 'NH'
         @user_selection: boolean value, if user wants to change the calibration curve selection manually; default value: True
         
@@ -974,10 +974,10 @@ class AgeFromFileMultiCores(object):
         self.user_selection = user_selection
         self.hemisphere = hemisphere
         # Check input values
-        possible_curves = ['IntCal20', 'Marine20', 'SHCal20', 'None']
+        possible_curves = ['IntCal20', 'Marine20', 'SHCal20', 'none']
         check_curves = [ele for ele in possible_curves if (ele in self.default_curve)]
         if bool(check_curves) == False:
-            raise Exception("Please provide one of the following curves as default curve: 'IntCal20', 'Marine20', 'SHCal20', or 'None'")
+            raise Exception("Please provide one of the following curves as default curve: 'IntCal20', 'Marine20', 'SHCal20', or 'none'")
         if self.hemisphere != 'NH' and self.hemisphere != 'SH':
             raise Exception("Please provie one of the following abbreviations for hemisphere: 'NH' for Northern Hemisphere or 'SH' for Southern Hemisphere")
         # Copy exisiting age dataframe
@@ -988,7 +988,7 @@ class AgeFromFileMultiCores(object):
         for i,r in self.__all_ages_cc.iterrows():
             # First case: surface sample without calibration
             if self.__all_ages_cc.at[i, 'material_description'] == 'derived surface age':
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
             
             # Second case: 14C sediment in boundaries of calibration curve
             elif (self.__all_ages_cc.at[i, 'material_category'] == '14C sediment') and \
@@ -1015,11 +1015,11 @@ class AgeFromFileMultiCores(object):
             elif  (self.__all_ages_cc.at[i, 'material_category'] == '14C terrestrial fossil' or self.__all_ages_cc.at[i, 'material_category'] == '14C sediment' or self.__all_ages_cc.at[i, 'material_category'] == '14C marine fossil') and \
             ((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) > 50000 or (self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) < 75 or \
             (((self.__all_ages_cc.at[i, 'age'] - self.__all_ages_cc.at[i,'reservoir_age']) - (self.__all_ages_cc.at[i, 'age_error'] + self.__all_ages_cc.at[i,'reservoir_error'])) < (1950 - datetime.datetime.now().year))):
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
             
             # Sixth case: Everything else :) 
             else:
-                self.__all_ages_cc.at[i, 'calibration_curve'] = 'None'
+                self.__all_ages_cc.at[i, 'calibration_curve'] = 'none'
                 
         # Allow user to change the calibration curve
         if self.user_selection == True:
@@ -1046,7 +1046,7 @@ class AgeFromFileMultiCores(object):
             choices_curve = ['IntCal20',
                             'Marine20',
                             'SHCal20',
-                            'None']
+                            'none']
             for header in range(len(col_headers)):
                 if header == col_headers.index('Calibration Curve'):
                     self.sheet.cells[header].style['backgroundColor'] = '#eefbdd'
