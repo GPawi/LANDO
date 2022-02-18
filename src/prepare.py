@@ -61,44 +61,17 @@ class PrepForUndatable(object):
         self.__txt_df_Undatable = pd.DataFrame(columns = self.__txt_Undatable_columns)
         
         for i,r in __all_ages.iterrows():
-            if __all_ages.at[i, 'material_category'] == '14C terrestrial fossil' or __all_ages.at[i, 'material_category'] == '14C sediment':
-                self.__core_Undatable = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                                (float(__all_ages.at[i, 'compositedepth']) - (float(__all_ages.at[i,'thickness'])/2)),
-                                                                (float(__all_ages.at[i, 'compositedepth']) + (float(__all_ages.at[i,'thickness'])/2)),
-                                                                __all_ages.at[i, 'age'],
-                                                                __all_ages.at[i, 'age_error'],
-                                                                __all_ages.at[i, 'material_category'],
-                                                                'IntCal20',
-                                                                __all_ages.at[i,'reservoir_age'],
-                                                                __all_ages.at[i,'reservoir_error'],
-                                                                'Yes']]), columns = self.__txt_Undatable_columns)
-                self.__txt_df_Undatable = self.__txt_df_Undatable.append(self.__core_Undatable)
-        
-            elif __all_ages.at[i, 'material_category'] == '14C marine fossil':
-                self.__core_Undatable = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                                (float(__all_ages.at[i, 'compositedepth']) - (float(__all_ages.at[i,'thickness'])/2)),
-                                                                (float(__all_ages.at[i, 'compositedepth']) + (float(__all_ages.at[i,'thickness'])/2)),
-                                                                __all_ages.at[i, 'age'],
-                                                                __all_ages.at[i, 'age_error'],
-                                                                __all_ages.at[i, 'material_category'],
-                                                                'Marine20',
-                                                                __all_ages.at[i,'reservoir_age'],
-                                                                __all_ages.at[i,'reservoir_error'],
-                                                                'Yes']]), columns = self.__txt_Undatable_columns)
-                self.__txt_df_Undatable = self.__txt_df_Undatable.append(self.__core_Undatable)
-            
-            else:
-                self.__core_Undatable = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                                (float(__all_ages.at[i, 'compositedepth']) - (float(__all_ages.at[i,'thickness'])/2)),
-                                                                (float(__all_ages.at[i, 'compositedepth']) + (float(__all_ages.at[i,'thickness'])/2)),
-                                                                __all_ages.at[i, 'age'],
-                                                                __all_ages.at[i, 'age_error'],
-                                                                __all_ages.at[i, 'material_category'],
-                                                                'none',
-                                                                __all_ages.at[i,'reservoir_age'],
-                                                                __all_ages.at[i,'reservoir_error'],
-                                                                'Yes']]), columns = self.__txt_Undatable_columns)
-                self.__txt_df_Undatable = self.__txt_df_Undatable.append(self.__core_Undatable)
+            self.__core_Undatable = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
+                                                            (float(__all_ages.at[i, 'compositedepth']) - (float(__all_ages.at[i,'thickness'])/2)),
+                                                            (float(__all_ages.at[i, 'compositedepth']) + (float(__all_ages.at[i,'thickness'])/2)),
+                                                            __all_ages.at[i, 'age'],
+                                                            __all_ages.at[i, 'age_error'],
+                                                            __all_ages.at[i, 'material_category'],
+                                                            __all_ages.at[i, 'calibration_curve'],
+                                                            __all_ages.at[i, 'reservoir_age'],
+                                                            __all_ages.at[i, 'reservoir_error'],
+                                                            'Yes']]), columns = self.__txt_Undatable_columns)
+            self.__txt_df_Undatable = self.__txt_df_Undatable.append(self.__core_Undatable)
 
                 
     def __prep_file_Undatable__(self):
@@ -173,33 +146,12 @@ class PrepForBchron(object):
                                                                     'calCurves': str})
         
         for i,r in __all_ages.iterrows():
-            if (__all_ages.at[i, 'material_category'] == '14C terrestrial fossil' or __all_ages.at[i, 'material_category'] == '14C sediment') and \
-            ((__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) <= 50000 and (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) > 75 and \
-            (((__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) - (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):  
+            if __all_ages.at[i, 'calibration_curve'] == 'none':
                 self.__core_Bchron = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
                                                              (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
                                                              (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
                                                              __all_ages.at[i, 'compositedepth'],
                                                              __all_ages.at[i,'thickness'],
-                                                             'intcal20']]), columns = self.__txt_Bchron_columns)
-                self.__core_Bchron = self.__core_Bchron.astype(dtype = {'id' : str,
-                                                                        'ages' : float,
-                                                                        'ageSds': float,
-                                                                        'position': float,
-                                                                        'thickness': float,
-                                                                        'calCurves': str})
-                self.__txt_df_Bchron = self.__txt_df_Bchron.append(self.__core_Bchron)
-        
-
-                
-            elif (__all_ages.at[i, 'material_category'] == '14C terrestrial fossil' or __all_ages.at[i, 'material_category'] == '14C sediment') and \
-            ((__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) > 50000 or (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) < 75 or \
-            (((__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) - (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error'])) < (1950 - datetime.datetime.now().year))):
-                self.__core_Bchron = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                            (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                            (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                            __all_ages.at[i, 'compositedepth'],
-                                                            __all_ages.at[i,'thickness'],
                                                              'normal']]), columns = self.__txt_Bchron_columns)
                 self.__core_Bchron = self.__core_Bchron.astype(dtype = {'id' : str,
                                                                         'ages' : float,
@@ -208,46 +160,13 @@ class PrepForBchron(object):
                                                                         'thickness': float,
                                                                         'calCurves': str})
                 self.__txt_df_Bchron = self.__txt_df_Bchron.append(self.__core_Bchron)
-            
-            elif __all_ages.at[i, 'material_category'] == '14C marine fossil' and \
-            (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) <= 50000:
-                self.__core_Bchron = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                           (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                           (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                           __all_ages.at[i, 'compositedepth'],
-                                                           __all_ages.at[i,'thickness'],
-                                                      'marine20']]), columns = self.__txt_Bchron_columns)
-                self.__core_Bchron = self.__core_Bchron.astype(dtype = {'id' : str,
-                                                                        'ages' : float,
-                                                                        'ageSds': float,
-                                                                        'position': float,
-                                                                        'thickness': float,
-                                                                        'calCurves': str})
-                self.__txt_df_Bchron = self.__txt_df_Bchron.append(self.__core_Bchron)
-            
-            elif __all_ages.at[i, 'material_category'] == '14C marine fossil' and \
-            (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) > 50000:
-                self.__core_Bchron = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                           (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                           (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                           __all_ages.at[i, 'compositedepth'],
-                                                           __all_ages.at[i,'thickness'],
-                                                      'normal']]), columns = self.__txt_Bchron_columns)
-                self.__core_Bchron = self.__core_Bchron.astype(dtype = {'id' : str,
-                                                                        'ages' : float,
-                                                                        'ageSds': float,
-                                                                        'position': float,
-                                                                        'thickness': float,
-                                                                        'calCurves': str})
-                self.__txt_df_Bchron = self.__txt_df_Bchron.append(self.__core_Bchron)
-            
             else:
                 self.__core_Bchron = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                           (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                           (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                           __all_ages.at[i, 'compositedepth'],
-                                                           __all_ages.at[i,'thickness'],
-                                                      'normal']]), columns = self.__txt_Bchron_columns)
+                                                             (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
+                                                             (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
+                                                             __all_ages.at[i, 'compositedepth'],
+                                                             __all_ages.at[i,'thickness'],
+                                                             __all_ages.at[i, 'calibration_curve'].lower()]]), columns = self.__txt_Bchron_columns)
                 self.__core_Bchron = self.__core_Bchron.astype(dtype = {'id' : str,
                                                                         'ages' : float,
                                                                         'ageSds': float,
@@ -314,29 +233,12 @@ class PrepForHamstr(object):
                                                                     'calCurves': str})
         
         for i,r in __all_ages.iterrows():
-            if (__all_ages.at[i, 'material_category'] == '14C terrestrial fossil' or __all_ages.at[i, 'material_category'] == '14C sediment') and ((__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) <= 50000 and (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) > 75):  
+            if __all_ages.at[i, 'calibration_curve'] == 'none':
                 self.__core_hamstr = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
                                                              (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
                                                              (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
                                                              __all_ages.at[i, 'compositedepth'],
                                                              __all_ages.at[i,'thickness'],
-                                                             'intcal20']]), columns = self.__txt_hamstr_columns)
-                self.__core_hamstr = self.__core_hamstr.astype(dtype = {'id' : str,
-                                                                        'ages' : float,
-                                                                        'ageSds': float,
-                                                                        'position': float,
-                                                                        'thickness': float,
-                                                                        'calCurves': str})
-                self.__txt_df_hamstr = self.__txt_df_hamstr.append(self.__core_hamstr)
-        
-
-                
-            elif (__all_ages.at[i, 'material_category'] == '14C terrestrial fossil' or __all_ages.at[i, 'material_category'] == '14C sediment') and ((__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) > 50000 or (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) < 75):
-                self.__core_hamstr = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                            (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                            (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                            __all_ages.at[i, 'compositedepth'],
-                                                            __all_ages.at[i,'thickness'],
                                                              'normal']]), columns = self.__txt_hamstr_columns)
                 self.__core_hamstr = self.__core_hamstr.astype(dtype = {'id' : str,
                                                                         'ages' : float,
@@ -345,44 +247,13 @@ class PrepForHamstr(object):
                                                                         'thickness': float,
                                                                         'calCurves': str})
                 self.__txt_df_hamstr = self.__txt_df_hamstr.append(self.__core_hamstr)
-            
-            elif __all_ages.at[i, 'material_category'] == '14C marine fossil' and (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) <= 50000:
-                self.__core_hamstr = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                           (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                           (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                           __all_ages.at[i, 'compositedepth'],
-                                                           __all_ages.at[i,'thickness'],
-                                                      'marine20']]), columns = self.__txt_hamstr_columns)
-                self.__core_hamstr = self.__core_hamstr.astype(dtype = {'id' : str,
-                                                                        'ages' : float,
-                                                                        'ageSds': float,
-                                                                        'position': float,
-                                                                        'thickness': float,
-                                                                        'calCurves': str})
-                self.__txt_df_hamstr = self.__txt_df_hamstr.append(self.__core_hamstr)
-            
-            elif __all_ages.at[i, 'material_category'] == '14C marine fossil' and (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) > 50000:
-                self.__core_hamstr = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                           (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                           (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                           __all_ages.at[i, 'compositedepth'],
-                                                           __all_ages.at[i,'thickness'],
-                                                      'normal']]), columns = self.__txt_hamstr_columns)
-                self.__core_hamstr = self.__core_hamstr.astype(dtype = {'id' : str,
-                                                                        'ages' : float,
-                                                                        'ageSds': float,
-                                                                        'position': float,
-                                                                        'thickness': float,
-                                                                        'calCurves': str})
-                self.__txt_df_hamstr = self.__txt_df_hamstr.append(self.__core_hamstr)
-            
             else:
                 self.__core_hamstr = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                           (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                           (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                           __all_ages.at[i, 'compositedepth'],
-                                                           __all_ages.at[i,'thickness'],
-                                                      'normal']]), columns = self.__txt_hamstr_columns)
+                                                             (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
+                                                             (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
+                                                             __all_ages.at[i, 'compositedepth'],
+                                                             __all_ages.at[i,'thickness'],
+                                                             __all_ages.at[i, 'calibration_curve'].lower()]]), columns = self.__txt_hamstr_columns)
                 self.__core_hamstr = self.__core_hamstr.astype(dtype = {'id' : str,
                                                                         'ages' : float,
                                                                         'ageSds': float,
@@ -444,8 +315,8 @@ class PrepForBacon(object):
                                                                   'delta_STD' : float})
         
         for i,r in __all_ages.iterrows():
-            if (__all_ages.at[i, 'material_category'] == '14C terrestrial fossil' or __all_ages.at[i, 'material_category'] == '14C sediment') and (__all_ages.at[i, 'age'] > 75):  
-                self.__core_Bacon = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'], ## Bacon might need another ID
+            if __all_ages.at[i, 'calibration_curve'] == 'IntCal20':  
+                self.__core_Bacon = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
                                                              __all_ages.at[i, 'age'], 
                                                              __all_ages.at[i, 'age_error'],
                                                              __all_ages.at[i, 'compositedepth'],
@@ -463,14 +334,14 @@ class PrepForBacon(object):
         
 
                 
-            elif (__all_ages.at[i, 'material_category'] == '14C terrestrial fossil' or __all_ages.at[i, 'material_category'] == '14C sediment') and (__all_ages.at[i, 'age'] < 75):
-                self.__core_Bacon = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'], ## Bacon might need another ID
-                                                            __all_ages.at[i, 'age'], 
-                                                            __all_ages.at[i, 'age_error'],
-                                                            __all_ages.at[i, 'compositedepth'],
-                                                            0,
-                                                            __all_ages.at[i,'reservoir_age'],
-                                                            __all_ages.at[i,'reservoir_error']]]), columns = self.__txt_Bacon_columns)
+            elif __all_ages.at[i, 'calibration_curve'] == 'Marine20':  
+                self.__core_Bacon = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
+                                                             __all_ages.at[i, 'age'], 
+                                                             __all_ages.at[i, 'age_error'],
+                                                             __all_ages.at[i, 'compositedepth'],
+                                                             2,
+                                                             __all_ages.at[i,'reservoir_age'],
+                                                             __all_ages.at[i,'reservoir_error']]]), columns = self.__txt_Bacon_columns)
                 self.__core_Bacon = self.__core_Bacon.astype(dtype = {'id' : str,
                                                                       'obs_age' : float,
                                                                       'obs_err' : float,
@@ -480,31 +351,14 @@ class PrepForBacon(object):
                                                                       'delta_STD' : float})
                 self.__txt_df_Bacon = self.__txt_df_Bacon.append(self.__core_Bacon)
             
-            elif __all_ages.at[i, 'material_category'] == '14C marine fossil' and (__all_ages.at[i, 'age'] > 75):
-                self.__core_Bacon = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'], ## Bacon might need another ID
-                                                            __all_ages.at[i, 'age'], 
-                                                            __all_ages.at[i, 'age_error'],
-                                                            __all_ages.at[i, 'compositedepth'],
-                                                            2,
-                                                            __all_ages.at[i,'reservoir_age'],
-                                                            __all_ages.at[i,'reservoir_error']]]), columns = self.__txt_Bacon_columns)
-                self.__core_Bacon = self.__core_Bacon.astype(dtype = {'id' : str,
-                                                                      'obs_age' : float,
-                                                                      'obs_err' : float,
-                                                                      'depth' : float,
-                                                                      'cc' : int,
-                                                                      'delta_R' : float,
-                                                                      'delta_STD' : float})
-                self.__txt_df_Bacon = self.__txt_df_Bacon.append(self.__core_Bacon)
-            
-            elif __all_ages.at[i, 'material_category'] == '14C marine fossil' and (__all_ages.at[i, 'age'] < 75):
-                self.__core_Bacon = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'], ## Bacon might need another ID
-                                                            __all_ages.at[i, 'age'], 
-                                                            __all_ages.at[i, 'age_error'],
-                                                            __all_ages.at[i, 'compositedepth'],
-                                                            0,
-                                                            __all_ages.at[i,'reservoir_age'],
-                                                            __all_ages.at[i,'reservoir_error']]]), columns = self.__txt_Bacon_columns)
+            elif __all_ages.at[i, 'calibration_curve'] == 'SHCal20':  
+                self.__core_Bacon = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
+                                                             __all_ages.at[i, 'age'], 
+                                                             __all_ages.at[i, 'age_error'],
+                                                             __all_ages.at[i, 'compositedepth'],
+                                                             3,
+                                                             __all_ages.at[i,'reservoir_age'],
+                                                             __all_ages.at[i,'reservoir_error']]]), columns = self.__txt_Bacon_columns)
                 self.__core_Bacon = self.__core_Bacon.astype(dtype = {'id' : str,
                                                                       'obs_age' : float,
                                                                       'obs_err' : float,
@@ -575,7 +429,9 @@ class PrepForClam(object):
         self.__txt_df_clam = pd.DataFrame(columns = self.__txt_clam_columns)
         
         for i,r in __all_ages.iterrows():
-            if (__all_ages.at[i, 'material_category'] == '14C terrestrial fossil' or __all_ages.at[i, 'material_category'] == '14C sediment') and ((__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) <= 50000 and (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) > 75):  
+            if (__all_ages.at[i, 'material_category'] == '14C terrestrial fossil' or __all_ages.at[i, 'material_category'] == '14C sediment' or __all_ages.at[i, 'material_category'] == '14C marine fossil') and \
+            ((__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) <= 50000 and (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) > 75 and \
+             (((__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) - (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error'])) > (1950 - datetime.datetime.now().year))):  
                 self.__core_clam = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
                                                             __all_ages.at[i, 'age'],
                                                             '',
@@ -659,29 +515,12 @@ class PrepForReservoirCorrection(object):
                                                                     'calCurves': str})
         
         for i,r in __all_ages.iterrows():
-            if (__all_ages.at[i, 'material_category'] == '14C terrestrial fossil' or __all_ages.at[i, 'material_category'] == '14C sediment') and ((__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) <= 50000 and (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) > 75):  
+            if __all_ages.at[i, 'calibration_curve'] == 'none':
                 self.__core_ReservoirCorrection = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
                                                              (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
                                                              (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
                                                              __all_ages.at[i, 'compositedepth'],
                                                              __all_ages.at[i,'thickness'],
-                                                             'intcal20']]), columns = self.__txt_ReservoirCorrection_columns)
-                self.__core_ReservoirCorrection = self.__core_ReservoirCorrection.astype(dtype = {'id' : str,
-                                                                        'ages' : float,
-                                                                        'ageSds': float,
-                                                                        'position': float,
-                                                                        'thickness': float,
-                                                                        'calCurves': str})
-                self.__txt_df_ReservoirCorrection = self.__txt_df_ReservoirCorrection.append(self.__core_ReservoirCorrection)
-        
-
-                
-            elif (__all_ages.at[i, 'material_category'] == '14C terrestrial fossil' or __all_ages.at[i, 'material_category'] == '14C sediment') and ((__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) > 50000 or (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) < 75):
-                self.__core_ReservoirCorrection = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                            (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                            (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                            __all_ages.at[i, 'compositedepth'],
-                                                            __all_ages.at[i,'thickness'],
                                                              'normal']]), columns = self.__txt_ReservoirCorrection_columns)
                 self.__core_ReservoirCorrection = self.__core_ReservoirCorrection.astype(dtype = {'id' : str,
                                                                         'ages' : float,
@@ -690,44 +529,13 @@ class PrepForReservoirCorrection(object):
                                                                         'thickness': float,
                                                                         'calCurves': str})
                 self.__txt_df_ReservoirCorrection = self.__txt_df_ReservoirCorrection.append(self.__core_ReservoirCorrection)
-            
-            elif __all_ages.at[i, 'material_category'] == '14C marine fossil' and (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) <= 50000:
-                self.__core_ReservoirCorrection = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                           (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                           (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                           __all_ages.at[i, 'compositedepth'],
-                                                           __all_ages.at[i,'thickness'],
-                                                      'marine20']]), columns = self.__txt_ReservoirCorrection_columns)
-                self.__core_ReservoirCorrection = self.__core_ReservoirCorrection.astype(dtype = {'id' : str,
-                                                                        'ages' : float,
-                                                                        'ageSds': float,
-                                                                        'position': float,
-                                                                        'thickness': float,
-                                                                        'calCurves': str})
-                self.__txt_df_ReservoirCorrection = self.__txt_df_ReservoirCorrection.append(self.__core_ReservoirCorrection)
-            
-            elif __all_ages.at[i, 'material_category'] == '14C marine fossil' and (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']) > 50000:
-                self.__core_ReservoirCorrection = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                           (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                           (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                           __all_ages.at[i, 'compositedepth'],
-                                                           __all_ages.at[i,'thickness'],
-                                                      'normal']]), columns = self.__txt_ReservoirCorrection_columns)
-                self.__core_ReservoirCorrection = self.__core_ReservoirCorrection.astype(dtype = {'id' : str,
-                                                                        'ages' : float,
-                                                                        'ageSds': float,
-                                                                        'position': float,
-                                                                        'thickness': float,
-                                                                        'calCurves': str})
-                self.__txt_df_ReservoirCorrection = self.__txt_df_ReservoirCorrection.append(self.__core_ReservoirCorrection)
-            
             else:
                 self.__core_ReservoirCorrection = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
-                                                           (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
-                                                           (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
-                                                           __all_ages.at[i, 'compositedepth'],
-                                                           __all_ages.at[i,'thickness'],
-                                                      'normal']]), columns = self.__txt_ReservoirCorrection_columns)
+                                                             (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
+                                                             (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
+                                                             __all_ages.at[i, 'compositedepth'],
+                                                             __all_ages.at[i,'thickness'],
+                                                             __all_ages.at[i, 'calibration_curve'].lower()]]), columns = self.__txt_ReservoirCorrection_columns)
                 self.__core_ReservoirCorrection = self.__core_ReservoirCorrection.astype(dtype = {'id' : str,
                                                                         'ages' : float,
                                                                         'ageSds': float,
