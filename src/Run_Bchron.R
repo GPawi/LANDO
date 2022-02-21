@@ -43,7 +43,6 @@ seed <- 210308
 ## Load data and give it to cluster
 Bchron_Frame <- Bchron_Frame %>%
     mutate_all(type.convert, as.is = TRUE) %>%
-    # mutate_if(is.factor, as.character) %>% #removed since "as.is = TRUE" was added
     mutate_at(c("ages", "ageSds"), as.integer)
 seq_id_all <- 1:length(CoreIDs)
 clusterExport(cl,list('Bchron_parallel','Bchron_Frame','CoreIDs','CoreLengths')) 

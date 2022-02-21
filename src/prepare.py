@@ -562,3 +562,87 @@ class PrepForReservoirCorrection(object):
         self.RC_CoreIDs = self.__coreid_df['coreid'].to_list()
         self.RC_Frame = self.__txt_df_ReservoirCorrection
         self.desired_surface_dates = self.__desired_surface_dates
+
+### For calibration ###      
+class PrepForCalibration(object):
+    def __init__(self, all_ages):
+        """
+        parameters:
+        @self.__all_ages: dataframe with all age determination data 
+        """
+        self.__all_ages = all_ages
+    
+    def __prep_format_calib__(self):
+        """
+        Helper function to transform age determination data into the format of calib 
+        
+        returns:
+        @self.__txt_df_calib: dataframe with age determination data in the format usable with calib
+        """
+        __all_ages = self.__all_ages
+        __all_ages = __all_ages.astype(dtype = {'age' : float,
+                                                'age_error' : float,
+                                                'reservoir_age' : float,
+                                                'reservoir_error': float})
+        self.__txt_calib_columns = ['id',
+                                     'ages',
+                                     'ageSds',
+                                     'position',
+                                     'thickness',
+                                     'calCurves',
+                                    'material_category']
+
+        self.__txt_df_calib = pd.DataFrame(columns = self.__txt_calib_columns)
+        self.__txt_df_calib = self.__txt_df_calib.astype(dtype = {'id' : str,
+                                                                    'ages' : float,
+                                                                    'ageSds': float,
+                                                                    'position': float,
+                                                                    'thickness': float,
+                                                                    'calCurves': str,
+                                                                  'material_category': str})
+        
+        for i,r in __all_ages.iterrows():
+            if __all_ages.at[i, 'calibration_curve'] == 'none':
+                self.__core_calib = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
+                                                             (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
+                                                             (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
+                                                             __all_ages.at[i, 'compositedepth'],
+                                                             __all_ages.at[i,'thickness'],
+                                                             'normal',
+                                                           __all_ages.at[i,'material_category']]]), columns = self.__txt_calib_columns)
+                self.__core_calib = self.__core_calib.astype(dtype = {'id' : str,
+                                                                        'ages' : float,
+                                                                        'ageSds': float,
+                                                                        'position': float,
+                                                                        'thickness': float,
+                                                                        'calCurves': str,
+                                                                      'material_category': str})
+                self.__txt_df_calib = self.__txt_df_calib.append(self.__core_calib)
+            else:
+                self.__core_calib = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
+                                                             (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
+                                                             (__all_ages.at[i, 'age_error'] + __all_ages.at[i,'reservoir_error']),
+                                                             __all_ages.at[i, 'compositedepth'],
+                                                             __all_ages.at[i,'thickness'],
+                                                             __all_ages.at[i, 'calibration_curve'].lower(),
+                                                            __all_ages.at[i,'material_category']]]), columns = self.__txt_calib_columns)
+                self.__core_calib = self.__core_calib.astype(dtype = {'id' : str,
+                                                                      'ages' : float,
+                                                                      'ageSds': float,
+                                                                      'position': float,
+                                                                      'thickness': float,
+                                                                      'material_category': str})
+                self.__txt_df_calib = self.__txt_df_calib.append(self.__core_calib)
+        
+        self.__txt_df_calib = self.__txt_df_calib.reset_index(drop = True)
+        
+        
+    def prep_it(self):
+        """
+        Main function to call helper function and renames variable
+        
+        returns:
+        @self.calib_Frame: dataframe with age determination data in the format usable with calib
+        """
+        self.__prep_format_calib__()
+        self.calib_Frame = self.__txt_df_calib

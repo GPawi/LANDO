@@ -86,7 +86,6 @@ seed <- 210329
 ## Load data and give it to cluster
 Bacon_Frame <- Bacon_Frame %>% 
   mutate_all(type.convert, as.is = TRUE) %>% 
-  # mutate_if(is.factor, as.character) %>% #removed since "as.is = TRUE" was added
   mutate_at(c("obs_age", "obs_err","delta_R","delta_STD"), as.integer)
 seq_id_all <- 1:length(CoreIDs)
 clusterExport(cl,list('Bacon_parallel','Bacon_Frame','CoreIDs','acc.shape','acc.mean', 'mem.strength', 'mem.mean', 'ssize', 'CoreLengths'))
