@@ -482,7 +482,7 @@ class PlotAgeSR(object):
                             '14C marine fossil': 'D',
                             'other': 'v',
                             'tephra': 'P',
-                            'tiepoint': 'X',
+                            'tie point': 'X',
                             'paleomag': '*',
                             'U/Th': 'H'}
             ##################################################
@@ -542,11 +542,11 @@ class PlotAgeSR(object):
             # 14C marine - 'D' - diamond;
             # other - 'v' - triangle (down);
             # tephra - 'P' - plus (filled);
-            # tiepoint - 'X' - X (filled);
+            # tie point - 'X' - X (filled);
             # paleomag - '*' - star; 
             # U/Th - 'H' - hexagon
             for category in self.calib_dates.material_category.unique():
-                ax1.errorbar(x='ages_calib', y='compositedepth', xerr = 'ages_calib_Sds', data = self.calib_dates[self.calib_dates.material_category.str.contains(category)], color = 'black', marker = marker_dates[category], linestyle = 'None', label = category)
+                ax1.errorbar(x='ages_calib', y='compositedepth', xerr = 'ages_calib_Sds', data = self.calib_dates[self.calib_dates.material_category.str.contains(category)], color = 'black', marker = marker_dates[category], linestyle = 'None', linewidth=2, markerfacecolor= 'none', markeredgecolor = 'black', label = category)
                            
             ax1.set_ylabel('Composite Depth [cm]')
             ax1.xaxis.set_label_position('top')
@@ -960,7 +960,7 @@ class PlotAgeSR(object):
                             '14C marine fossil': 'D',
                             'other': 'v',
                             'tephra': 'P',
-                            'tiepoint': 'X',
+                            'tie point': 'X',
                             'paleomag': '*',
                             'U/Th': 'H'}
             ##################################################
@@ -1026,11 +1026,11 @@ class PlotAgeSR(object):
             # 14C marine - 'D' - diamond;
             # other - 'v' - triangle (down);
             # tephra - 'P' - plus (filled);
-            # tiepoint - 'X' - X (filled);
+            # tie point - 'X' - X (filled);
             # paleomag - '*' - star; 
             # U/Th - 'H' - hexagon
             for category in self.calib_dates.material_category.unique():
-                ax2.errorbar(x='ages_calib', y='compositedepth', xerr = 'ages_calib_Sds', data = self.calib_dates[self.calib_dates.material_category.str.contains(category)], color = 'black', marker = marker_dates[category], linestyle = 'None', label = category)
+                ax2.errorbar(x='ages_calib', y='compositedepth', xerr = 'ages_calib_Sds', data = self.calib_dates[self.calib_dates.material_category.str.contains(category)], color = 'black', marker = marker_dates[category], linestyle = 'None', linewidth=2, markerfacecolor= 'none', markeredgecolor = 'black', label = category)
             
             ax2.xaxis.set_label_position('top')
             ax2.set_xlabel('Calibrated Age [cal yr BP]', labelpad = 10)
