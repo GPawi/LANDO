@@ -564,8 +564,8 @@ class AggDataReservoir(object):
             for key in self.reservoir_values.keys():
                 for i, r in self.all_ages.iterrows():
                     if (self.all_ages.at[i, 'coreid'] == key) and ('14C' in self.all_ages.at[i, 'material_category']):
-                        self.all_ages.at[i, 'reservoir_age'] = self.reservoir_values[key][0]
-                        self.all_ages.at[i, 'reservoir_error'] = self.reservoir_values[key][1]
+                        self.all_ages.at[i, 'reservoir_age'] = float(self.all_ages.at[i, 'reservoir_age']) + float(self.reservoir_values[key][0])
+                        self.all_ages.at[i, 'reservoir_error'] = float(self.all_ages.at[i, 'reservoir_error']) + float(self.reservoir_values[key][1])
                 self.dttp = 'Yes' ## Needs to be more sophisticated for multiple sediment cores, to answer which core had a transformation
             if bool(self.reservoir_values) == False:
                 self.dttp = 'No' 
@@ -573,8 +573,8 @@ class AggDataReservoir(object):
             for key in self.reservoir_values.keys():
                 for i, r in self.all_ages.iterrows():
                     if (self.all_ages.at[i, 'coreid'] == key) and ('14C sediment' in self.all_ages.at[i, 'material_category']):
-                        self.all_ages.at[i, 'reservoir_age'] = self.reservoir_values[key][0]
-                        self.all_ages.at[i, 'reservoir_error'] = self.reservoir_values[key][1]
+                        self.all_ages.at[i, 'reservoir_age'] = float(self.all_ages.at[i, 'reservoir_age']) + float(self.reservoir_values[key][0])
+                        self.all_ages.at[i, 'reservoir_error'] = float(self.all_ages.at[i, 'reservoir_error']) + float(self.reservoir_values[key][1])
                 self.dttp = 'Yes' ## Needs to be more sophisticated for multiple sediment cores, to answer which core had a transformation
             if bool(self.reservoir_values) == False:
                 self.dttp = 'No' 
