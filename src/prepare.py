@@ -579,7 +579,7 @@ class PrepForCalibration(object):
         returns:
         @self.__txt_df_calib: dataframe with age determination data in the format usable with calib
         """
-        __all_ages = self.__all_ages
+        __all_ages = self.__all_ages[~self.__all_ages.labid.str.contains('_Surface')].copy()
         __all_ages = __all_ages.astype(dtype = {'age' : float,
                                                 'age_error' : float,
                                                 'reservoir_age' : float,
