@@ -1,13 +1,13 @@
 ### Script to define reservoir values with hamstr in LANDO ###
 ## Load libraries
 suppressPackageStartupMessages(c(library('hamstr'),
-library('rstan'),
-library('Bchron'),
-library('tidyverse'),
-library('parallel'),
-library('foreach'),
-library('doSNOW'),
-library('doRNG')))
+                                 library('rstan'),
+                                 library('Bchron'),
+                                 library('tidyverse'),
+                                 library('parallel'),
+                                 library('foreach'),
+                                 library('doSNOW'),
+                                 library('doRNG')))
 set.seed(20201224)
 
 ### Parallel add - RC parallel
