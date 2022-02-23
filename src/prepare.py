@@ -95,7 +95,7 @@ class PrepForUndatable(object):
         for ID in self.new_coreid_list:
             if __txt_df_Undatable[__txt_df_Undatable['Sample ID'].str.contains(ID)].empty == False:
                 temp = __txt_df_Undatable[__txt_df_Undatable['Sample ID'].str.contains(ID) == True]
-                temp.to_csv(f'{ID}.txt', header = True, index = False, sep = '\t')
+                temp.to_csv(f'{ID}.txt', header = True, index = False, sep = '\t', line_terminator = os.linesep)
             else:
                 continue
         print ('New files for Undatable created!')
