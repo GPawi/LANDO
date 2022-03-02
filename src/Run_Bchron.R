@@ -20,7 +20,7 @@ Bchron_parallel = function(...) {
                     positionThickness = core_selection$thickness,
                     ids = core_selection$id,
                     #jitterPositions = TRUE, #removed from Bchron 4.7.6
-                    artificialThickness = 0.5,
+                    artificialThickness = 2,
                     iterations = 15000,  #iterations = 10000,
                     burn = 5000,        #burn = 2000,
                     thin = 1,            #thin = 8,

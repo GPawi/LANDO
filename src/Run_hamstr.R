@@ -19,6 +19,7 @@ hamstr_parallel <- function(...) {
   hamstr_fitting <- hamstr(depth = core_selection$position,
                            obs_age = core_selection$ages_calib,
                            obs_err = core_selection$ages_calib_Sds,
+                           min_age = -150, 
                            top_depth = 0,
                            bottom_depth = clength$corelength,
                            K = K, #c(10, 10),
