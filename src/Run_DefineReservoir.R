@@ -1,13 +1,13 @@
 ### Script to define reservoir values with hamstr in LANDO ###
 ## Load libraries
 suppressPackageStartupMessages(c(library('hamstr'),
-library('rstan'),
-library('Bchron'),
-library('tidyverse'),
-library('parallel'),
-library('foreach'),
-library('doSNOW'),
-library('doRNG')))
+                                 library('rstan'),
+                                 library('Bchron'),
+                                 library('tidyverse'),
+                                 library('parallel'),
+                                 library('foreach'),
+                                 library('doSNOW'),
+                                 library('doRNG')))
 set.seed(20201224)
 
 ### Parallel add - RC parallel
@@ -46,7 +46,6 @@ seed <- 210330
 
 RC_Frame = RC_Frame %>%
     mutate_all(type.convert, as.is = TRUE) %>%
-    # mutate_if(is.factor, as.character) %>% #removed since "as.is = TRUE" was added
     mutate_at(c("ages", "ageSds"), as.integer)
 cal.ages = BchronCalibrate(ages = RC_Frame$ages, ageSds = RC_Frame$ageSds, calCurves = RC_Frame$calCurves, allowOutside = TRUE)
 suppressWarnings({RC_Frame$ages_calib <- sapply(cal.ages, function(x){

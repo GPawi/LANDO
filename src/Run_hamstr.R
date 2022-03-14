@@ -19,6 +19,7 @@ hamstr_parallel <- function(...) {
   hamstr_fitting <- hamstr(depth = core_selection$position,
                            obs_age = core_selection$ages_calib,
                            obs_err = core_selection$ages_calib_Sds,
+                           min_age = -150, 
                            top_depth = 0,
                            bottom_depth = clength$corelength,
                            K = K, #c(10, 10),
@@ -47,7 +48,6 @@ seed <- 210330
 
 hamstr_Frame = hamstr_Frame %>%
     mutate_all(type.convert,as.is = TRUE) %>%
-    # mutate_if(is.factor, as.character) %>% #removed since "as.is = TRUE" was added
     mutate_at(c("ages", "ageSds"), as.integer)
 cal.ages = BchronCalibrate(ages = hamstr_Frame$ages, ageSds = hamstr_Frame$ageSds, calCurves = hamstr_Frame$calCurves, allowOutside = TRUE)
 suppressWarnings({
@@ -91,6 +91,4 @@ rm(list = "cl")
 gc()
 registerDoSEQ()
 
-calib_dates = hamstr_Frame[, c(1, 7:8)]
-return(calib_dates)
 return(hamstr_core_results)

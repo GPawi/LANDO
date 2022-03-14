@@ -9,7 +9,7 @@ LANDO: Linked age-depth modeling
 </div>
 
 <!-- ABOUT THE PROJECT -->
-## Abount the project
+## About the project
 
 **LANDO** links the most commonly used age-depth modeling software in one multi-language Jupyter Notebook, known as [_SoS notebook_](https://github.com/vatlab/sos-notebook) (Peng et al., 2018). Due to its design, the notebook uses four Jupyter kernels: Python, R, Octave, and MATLAB. We implemented the following modeling systems in **LANDO**:  
    	* [_Bacon_](https://github.com/Maarten14C/rbacon) (Blaauw and Christen, 2011),  

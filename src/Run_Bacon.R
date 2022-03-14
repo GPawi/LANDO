@@ -2,6 +2,7 @@
 ## Load libraries
 suppressPackageStartupMessages(c(library('hamstr')
                                  ,library('rbacon')
+                                 ,library('hamstrbacon')
                                  ,library('IntCal')
                                  ,library('tidyverse')
                                  ,library('parallel')
@@ -32,9 +33,11 @@ Bacon_parallel <- function(...) {
                      mem.strength = mem.strength, 
                      mem.mean = mem.mean,
                      ssize = ssize,
-                     thick = 1
+                     thick = 1,
+                     bacon.change.thick = TRUE
                      )
-  age.mods.interp <- as.ffdf(hamstr:::predict.hamstr_bacon_fit(run, depth = seq(0,clength$corelength, by = 1)))
+  #age.mods.interp <- as.ffdf(hamstr:::predict.hamstr_bacon_fit(run, depth = seq(0,clength$corelength, by = 1)))
+  age.mods.interp <- as.ffdf(predict(run, depth = seq(0,clength$corelength, by = 1)))
   rm(run)
   gc()
   while (max(age.mods.interp$iter) < 10001) {
@@ -55,9 +58,11 @@ Bacon_parallel <- function(...) {
                         mem.strength = mem.strength, 
                         mem.mean = mem.mean,
                         ssize = new_ssize,
-                        thick = 1
+                        thick = 1,
+                        bacon.change.thick = TRUE
     )
-    age.mods.interp <- as.ffdf(hamstr:::predict.hamstr_bacon_fit(run, depth = seq(min(run$pars$d.min),clength$corelength, by = 1)))
+    #age.mods.interp <- as.ffdf(hamstr:::predict.hamstr_bacon_fit(run, depth = seq(min(run$pars$d.min),clength$corelength, by = 1)))
+    age.mods.interp <- as.ffdf(predict(run, depth = seq(0,clength$corelength, by = 1)))
     rm(run)
     gc()
   } 
@@ -81,7 +86,6 @@ seed <- 210329
 ## Load data and give it to cluster
 Bacon_Frame <- Bacon_Frame %>% 
   mutate_all(type.convert, as.is = TRUE) %>% 
-  # mutate_if(is.factor, as.character) %>% #removed since "as.is = TRUE" was added
   mutate_at(c("obs_age", "obs_err","delta_R","delta_STD"), as.integer)
 seq_id_all <- 1:length(CoreIDs)
 clusterExport(cl,list('Bacon_parallel','Bacon_Frame','CoreIDs','acc.shape','acc.mean', 'mem.strength', 'mem.mean', 'ssize', 'CoreLengths'))
@@ -93,7 +97,7 @@ Bacon_core_results <- foreach(i = seq_id_all
                               ,.multicombine = TRUE
                               ,.maxcombine = 1000
                               ,.inorder = FALSE
-                              ,.packages=c('tidyverse', 'IntCal', 'rbacon', 'hamstr', 'foreach', 'parallel','ff', 'ffbase')
+                              ,.packages=c('tidyverse', 'IntCal', 'rbacon', 'hamstr', 'foreach', 'parallel','ff', 'ffbase', 'hamstrbacon')
                               ,.options.RNG=seed
 
 ) %dorng% {
