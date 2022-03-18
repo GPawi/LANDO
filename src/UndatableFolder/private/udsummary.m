@@ -24,6 +24,8 @@ try
     checkmex = sum(nakeinterp1mac([1; 10],[1; 100],[2:2:9]')) == 180;
   elseif ispc() == 1
     checkmex = sum(nakeinterp1win([1; 10],[1; 100],[2:2:9]')) == 180;
+  elseif isunix() == 1
+    checkmex = sum(nakeinterp1lin([1; 10],[1; 100],[2:2:9]')) == 180;
   else
     checkmex = sum(nakeinterp1([1; 10],[1; 100],[2:2:9]')) == 180;
   endif
@@ -57,6 +59,10 @@ if exist('checkmex','var') == 1
     elseif ispc() == 1
       for i = 1:nsim
 			  tempage(:,i) = nakeinterp1win(agedepmat(:,2,i),agedepmat(:,1,i),nakedepthrange);
+		  end
+    elseif isunix() == 1
+      for i = 1:nsim
+			  tempage(:,i) = nakeinterp1lin(agedepmat(:,2,i),agedepmat(:,1,i),nakedepthrange);
 		  end
     else
       for i = 1:nsim
