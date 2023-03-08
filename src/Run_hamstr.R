@@ -23,8 +23,8 @@ hamstr_parallel <- function(...) {
                            top_depth = 0,
                            bottom_depth = clength$corelength,
                            K = K, #c(10, 10),
-                           iter = 6667)
-  age.mods.interp <- hamstr:::predict.hamstr_fit(hamstr_fitting,depth = seq(0,clength$corelength, by = 1))
+                           stan_sampler_args = get_stan_sampler_args(iter = 6667))
+  age.mods.interp <- hamstr:::predict.hamstr_fit(hamstr_fitting,depth = seq(0,clength$corelength, by = 1)) # for meter: by = 100
   result_individual_core <- as.data.frame(age.mods.interp)
   result_individual_core$depth <- factor(result_individual_core$depth) 
   result_individual_core$depth <- paste(CoreIDs[[i]], result_individual_core$depth)

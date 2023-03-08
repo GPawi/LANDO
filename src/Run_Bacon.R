@@ -33,11 +33,10 @@ Bacon_parallel <- function(...) {
                      mem.strength = mem.strength, 
                      mem.mean = mem.mean,
                      ssize = ssize,
-                     thick = 1,
+                     thick = 1, # for meter: thick = 100
                      bacon.change.thick = TRUE
                      )
-  #age.mods.interp <- as.ffdf(hamstr:::predict.hamstr_bacon_fit(run, depth = seq(0,clength$corelength, by = 1)))
-  age.mods.interp <- as.ffdf(predict(run, depth = seq(0,clength$corelength, by = 1)))
+  age.mods.interp <- as.ffdf(predict(run, depth = seq(0,clength$corelength, by = 1))) # for meter: by = 100
   rm(run)
   gc()
   while (max(age.mods.interp$iter) < 10001) {
@@ -58,11 +57,10 @@ Bacon_parallel <- function(...) {
                         mem.strength = mem.strength, 
                         mem.mean = mem.mean,
                         ssize = new_ssize,
-                        thick = 1,
+                        thick = 1, # for meter: thick = 100
                         bacon.change.thick = TRUE
     )
-    #age.mods.interp <- as.ffdf(hamstr:::predict.hamstr_bacon_fit(run, depth = seq(min(run$pars$d.min),clength$corelength, by = 1)))
-    age.mods.interp <- as.ffdf(predict(run, depth = seq(0,clength$corelength, by = 1)))
+    age.mods.interp <- as.ffdf(predict(run, depth = seq(0,clength$corelength, by = 1))) # for meter: by = 100
     rm(run)
     gc()
   } 

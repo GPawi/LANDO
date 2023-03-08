@@ -22,7 +22,7 @@ RC_parallel <- function(...) {
                            top_depth = 0,
                            bottom_depth = clength$corelength,
                            K = K, #c(10, 10),
-                           iter = 2000)) # 2000
+                           stan_sampler_args = get_stan_sampler_args(iter = 2000))) # 2000
   age.mods.interp <- hamstr:::predict.hamstr_fit(hamstr_fitting,depth = 0)
   result_individual_core <- as.data.frame(age.mods.interp)
   result_individual_core$depth <- factor(result_individual_core$depth) 

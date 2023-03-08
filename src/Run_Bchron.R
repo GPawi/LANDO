@@ -25,9 +25,9 @@ Bchron_parallel = function(...) {
                     burn = 5000,        #burn = 2000,
                     thin = 1,            #thin = 8,
                     allowOutside = TRUE,
-                    predictPositions = seq(0,clength$corelength, by = 1))
+                    predictPositions = seq(0,clength$corelength, by = 1)) # for meter: by = 100
   result_individual_core <- as.data.frame(t(run$thetaPredict))
-  row.names(result_individual_core) <- outer(CoreIDs[[i]], seq(0,clength$corelength, by = 1), paste)
+  row.names(result_individual_core) <- outer(CoreIDs[[i]], seq(0,clength$corelength, by = 1), paste) # for meter: by = 100
   message(sprintf(" Done with core %s - Number %d out of %d", CoreIDs[[i]], i, length(CoreIDs)))
   return (result_individual_core)
 }
