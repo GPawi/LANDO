@@ -71,7 +71,8 @@ class PrepForUndatable(object):
                                                             __all_ages.at[i, 'reservoir_age'],
                                                             __all_ages.at[i, 'reservoir_error'],
                                                             'Yes']]), columns = self.__txt_Undatable_columns)
-            self.__txt_df_Undatable = self.__txt_df_Undatable.append(self.__core_Undatable)
+            #self.__txt_df_Undatable = self.__txt_df_Undatable.append(self.__core_Undatable)
+            self.__txt_df_Undatable = pd.concat([self.__txt_df_Undatable,self.__core_Undatable], axis = 0)
 
                 
     def __prep_file_Undatable__(self):
@@ -95,7 +96,7 @@ class PrepForUndatable(object):
         for ID in self.new_coreid_list:
             if __txt_df_Undatable[__txt_df_Undatable['Sample ID'].str.contains(ID)].empty == False:
                 temp = __txt_df_Undatable[__txt_df_Undatable['Sample ID'].str.contains(ID) == True]
-                temp.to_csv(f'{ID}.txt', header = True, index = False, sep = '\t', line_terminator = os.linesep)
+                temp.to_csv(f'{ID}.txt', header = True, index = False, sep = '\t', lineterminator = os.linesep)
             else:
                 continue
         print ('New files for Undatable created!')
@@ -159,7 +160,8 @@ class PrepForBchron(object):
                                                                         'position': float,
                                                                         'thickness': float,
                                                                         'calCurves': str})
-                self.__txt_df_Bchron = self.__txt_df_Bchron.append(self.__core_Bchron)
+                #self.__txt_df_Bchron = self.__txt_df_Bchron.append(self.__core_Bchron)
+                self.__txt_df_Bchron = pd.concat([self.__txt_df_Bchron,self.__core_Bchron], axis = 0)
             else:
                 self.__core_Bchron = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
                                                              (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
@@ -173,7 +175,8 @@ class PrepForBchron(object):
                                                                         'position': float,
                                                                         'thickness': float,
                                                                         'calCurves': str})
-                self.__txt_df_Bchron = self.__txt_df_Bchron.append(self.__core_Bchron)
+                #self.__txt_df_Bchron = self.__txt_df_Bchron.append(self.__core_Bchron)
+                self.__txt_df_Bchron = pd.concat([self.__txt_df_Bchron,self.__core_Bchron], axis = 0)
         
         self.__txt_df_Bchron = self.__txt_df_Bchron.reset_index(drop = True)
         
@@ -246,7 +249,8 @@ class PrepForHamstr(object):
                                                                         'position': float,
                                                                         'thickness': float,
                                                                         'calCurves': str})
-                self.__txt_df_hamstr = self.__txt_df_hamstr.append(self.__core_hamstr)
+                #self.__txt_df_hamstr = self.__txt_df_hamstr.append(self.__core_hamstr)
+                self.__txt_df_hamstr = pd.concat([self.__txt_df_hamstr, self.__core_hamstr], axis = 0)
             else:
                 self.__core_hamstr = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
                                                              (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
@@ -260,7 +264,8 @@ class PrepForHamstr(object):
                                                                         'position': float,
                                                                         'thickness': float,
                                                                         'calCurves': str})
-                self.__txt_df_hamstr = self.__txt_df_hamstr.append(self.__core_hamstr)
+                #self.__txt_df_hamstr = self.__txt_df_hamstr.append(self.__core_hamstr)
+                self.__txt_df_hamstr = pd.concat([self.__txt_df_hamstr, self.__core_hamstr], axis = 0)
         
         self.__txt_df_hamstr = self.__txt_df_hamstr.reset_index(drop = True)
         
@@ -330,8 +335,8 @@ class PrepForBacon(object):
                                                                       'cc' : int,
                                                                       'delta_R' : float,
                                                                       'delta_STD' : float})
-                self.__txt_df_Bacon = self.__txt_df_Bacon.append(self.__core_Bacon)
-        
+                #self.__txt_df_Bacon = self.__txt_df_Bacon.append(self.__core_Bacon)
+                self.__txt_df_Bacon = pd.concat([self.__txt_df_Bacon, self.__core_Bacon], axis = 0)
 
                 
             elif __all_ages.at[i, 'calibration_curve'] == 'Marine20':  
@@ -349,7 +354,8 @@ class PrepForBacon(object):
                                                                       'cc' : int,
                                                                       'delta_R' : float,
                                                                       'delta_STD' : float})
-                self.__txt_df_Bacon = self.__txt_df_Bacon.append(self.__core_Bacon)
+                #self.__txt_df_Bacon = self.__txt_df_Bacon.append(self.__core_Bacon)
+                self.__txt_df_Bacon = pd.concat([self.__txt_df_Bacon, self.__core_Bacon], axis = 0)
             
             elif __all_ages.at[i, 'calibration_curve'] == 'SHCal20':  
                 self.__core_Bacon = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
@@ -366,7 +372,8 @@ class PrepForBacon(object):
                                                                       'cc' : int,
                                                                       'delta_R' : float,
                                                                       'delta_STD' : float})
-                self.__txt_df_Bacon = self.__txt_df_Bacon.append(self.__core_Bacon)
+                #self.__txt_df_Bacon = self.__txt_df_Bacon.append(self.__core_Bacon)
+                self.__txt_df_Bacon = pd.concat([self.__txt_df_Bacon, self.__core_Bacon], axis = 0)
             
             else:
                 self.__core_Bacon = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'], ## Bacon might need another ID
@@ -383,7 +390,8 @@ class PrepForBacon(object):
                                                                       'cc' : int,
                                                                       'delta_R' : float,
                                                                       'delta_STD' : float})
-                self.__txt_df_Bacon = self.__txt_df_Bacon.append(self.__core_Bacon)
+                #self.__txt_df_Bacon = self.__txt_df_Bacon.append(self.__core_Bacon)
+                self.__txt_df_Bacon = pd.concat([self.__txt_df_Bacon, self.__core_Bacon], axis = 0)
         
         self.__txt_df_Bacon = self.__txt_df_Bacon.reset_index(drop = True)
         
@@ -439,7 +447,8 @@ class PrepForClam(object):
                                                             __all_ages.at[i,'reservoir_age'],
                                                             __all_ages.at[i, 'compositedepth'],
                                                             __all_ages.at[i,'thickness']]]), columns = self.__txt_clam_columns)
-                self.__txt_df_clam = self.__txt_df_clam.append(self.__core_clam)
+                #self.__txt_df_clam = self.__txt_df_clam.append(self.__core_clam)
+                self.__txt_df_clam = pd.concat([self.__txt_df_clam, self.__core_clam], axis = 0)
             else:
                 self.__core_clam = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
                                                            '', 
@@ -448,7 +457,8 @@ class PrepForClam(object):
                                                             __all_ages.at[i,'reservoir_age'],
                                                             __all_ages.at[i, 'compositedepth'],
                                                             __all_ages.at[i,'thickness']]]), columns = self.__txt_clam_columns)
-                self.__txt_df_clam = self.__txt_df_clam.append(self.__core_clam)
+                #self.__txt_df_clam = self.__txt_df_clam.append(self.__core_clam)
+                self.__txt_df_clam = pd.concat([self.__txt_df_clam, self.__core_clam], axis = 0)
         
         self.__txt_df_clam = self.__txt_df_clam.reset_index(drop = True)
     
@@ -528,7 +538,8 @@ class PrepForReservoirCorrection(object):
                                                                         'position': float,
                                                                         'thickness': float,
                                                                         'calCurves': str})
-                self.__txt_df_ReservoirCorrection = self.__txt_df_ReservoirCorrection.append(self.__core_ReservoirCorrection)
+                #self.__txt_df_ReservoirCorrection = self.__txt_df_ReservoirCorrection.append(self.__core_ReservoirCorrection)
+                self.__txt_df_ReservoirCorrection = pd.concat([self.__txt_df_ReservoirCorrection, self.__core_ReservoirCorrection], axis = 0)
             else:
                 self.__core_ReservoirCorrection = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
                                                              (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
@@ -542,7 +553,8 @@ class PrepForReservoirCorrection(object):
                                                                         'position': float,
                                                                         'thickness': float,
                                                                         'calCurves': str})
-                self.__txt_df_ReservoirCorrection = self.__txt_df_ReservoirCorrection.append(self.__core_ReservoirCorrection)
+                #self.__txt_df_ReservoirCorrection = self.__txt_df_ReservoirCorrection.append(self.__core_ReservoirCorrection)
+                self.__txt_df_ReservoirCorrection = pd.concat([self.__txt_df_ReservoirCorrection, self.__core_ReservoirCorrection], axis = 0)
         
         self.__txt_df_ReservoirCorrection = self.__txt_df_ReservoirCorrection.reset_index(drop = True)
         
@@ -617,7 +629,8 @@ class PrepForCalibration(object):
                                                                         'thickness': float,
                                                                         'calCurves': str,
                                                                       'material_category': str})
-                self.__txt_df_calib = self.__txt_df_calib.append(self.__core_calib)
+                #self.__txt_df_calib = self.__txt_df_calib.append(self.__core_calib)
+                self.__txt_df_calib = pd.concat([self.__txt_df_calib, self.__core_calib], axis = 0)
             else:
                 self.__core_calib = pd.DataFrame(np.array([[__all_ages.at[i, 'measurementid'],
                                                              (__all_ages.at[i, 'age'] - __all_ages.at[i,'reservoir_age']), 
@@ -632,7 +645,8 @@ class PrepForCalibration(object):
                                                                       'position': float,
                                                                       'thickness': float,
                                                                       'material_category': str})
-                self.__txt_df_calib = self.__txt_df_calib.append(self.__core_calib)
+                #self.__txt_df_calib = self.__txt_df_calib.append(self.__core_calib)
+                self.__txt_df_calib = pd.concat([self.__txt_df_calib, self.__core_calib], axis = 0)
         
         self.__txt_df_calib = self.__txt_df_calib.reset_index(drop = True)
         

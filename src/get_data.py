@@ -16,8 +16,9 @@ import xlrd
 import datetime
 import ipysheet
 import ipywidgets
-xlrd.xlsx.ensure_elementtree_imported(False, None)
-xlrd.xlsx.Element_has_iter = True
+#xlrd.xlsx.ensure_elementtree_imported(False, None)
+#xlrd.xlsx.Element_has_iter = True
+from IPython.display import display
 from ipyfilechooser import FileChooser
 from ipysheet import from_dataframe, to_dataframe
 from psycopg2.extras import NumericRange

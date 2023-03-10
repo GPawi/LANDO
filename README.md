@@ -71,7 +71,7 @@ brew install octave
 
 **Windows**: Please make sure you have Rtools4 installed - the instructions can be found [here](https://cran.r-project.org/bin/windows/Rtools/).
 
-**macOS**: Make sure you have Xcode and the command line tool (CLT) installed on your computer - [here](https://www.freecodecamp.org/news/how-to-download-and-install-xcode/amp/) are the instructions. Also install the appropriate `gfortran` version for your **macOS** version from [GitHub](https://github.com/fxcoudert/gfortran-for-macOS/releases). Further information on the installation process of `gfortan` can be found on this [website](https://thecoatlessprofessor.com/programming/cpp/r-compiler-tools-for-rcpp-on-macos/). 
+**macOS**: Make sure you have Xcode and the command line tool (CLT) installed on your computer - [here](https://www.freecodecamp.org/news/how-to-download-and-install-xcode/amp/) are the instructions. Also install the appropriate `gfortran` version for your **macOS** version from [GitHub](https://github.com/fxcoudert/gfortran-for-macOS/releases). Further information on the installation process of `gfortran` can be found on this [website](https://thecoatlessprofessor.com/programming/cpp/r-compiler-tools-for-rcpp-on-macos/). 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -126,10 +126,9 @@ One by one, use these following lines to install all python packages and accept 
 
 ~~~
 > conda install --file requirements_forge.txt -c conda-forge
-> conda install mamba -c conda-forge
 > mamba install pyarrow -c conda-forge
 > conda install pip
-> pip install -r requirements.txt
+> python -m pip install -r requirements.txt
 ~~~
 
 ###### R
@@ -195,12 +194,6 @@ Available kernels:
 	sos
 ~~~
 
-To ensure that your kernels work with the corrected kernel version of _SoS notebook_, copy the file from the **LANDO** repository to the directory of the _SoS notebook_ in your miniconda installation. In our working example the `{destination path}` was `C:\Miniconda3\envs\LANDO\lib\site-packages\sos_notebook`. Please ensure that you are still in the **LANDO** repository, otherwise navigate to it with `pushd` or `cd`. 
-
-~~~
-copy "src\kernel.py" "{destination_path}"
-~~~
-
 ###### Package installation
 
 Then open the Jupyter Notebook by typing into the `Anaconda Powershell Prompt`:
@@ -235,10 +228,9 @@ One by one, use these following lines to install all python packages and accept 
 
 ~~~
 > conda install --file requirements_forge.txt -c conda-forge
-> conda install mamba -c conda-forge
 > mamba install pyarrow -c conda-forge
 > conda install pip
-> pip install -r requirements.txt
+> python -m pip install -r requirements.txt
 ~~~
 
 ###### R
@@ -278,12 +270,6 @@ Available kernels:
 	octave
 	python3
 	sos
-~~~
-
-To ensure that your kernels work with the corrected kernel version of _SoS notebook_, copy the file from the **LANDO** repository to the directory of the _SoS notebook_ in your miniconda installation. In our working example the `{destination path}` was `/opt/miniconda3/envs/LANDO/lib/python3.9/site-packages/sos_notebook`. 
-
-~~~
-cp -R src/kernel.py {destination path}
 ~~~
 
 ###### .mex files
