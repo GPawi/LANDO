@@ -2,7 +2,6 @@ matplotlib
 numpy
 pandas
 seaborn
-octave_kernel
 jupyter_client
 jupyter_core
 jupyter_server
@@ -17,7 +16,6 @@ dask
 distributed
 ipyfilechooser
 ipysheet
-ipywidgets
 openpyxl
 jupyterlab-sos
 mamba
