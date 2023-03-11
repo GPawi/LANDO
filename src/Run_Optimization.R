@@ -1,21 +1,11 @@
 ### Script to find lithological changes through independet proxy data
 ## Load libraries
 suppressPackageStartupMessages(c(library('forecast')
-                                 ,library('tseries')
-                                 ,library('lubridate')
                                  ,library('changepoint')
-                                 ,library('dplyr')
-                                 ,library('DescTools')
                                  ,library('sets')
-                                 ,library('FuzzyNumbers')
-                                 ,library('Metrics')
-                                 ,library('knitr')
-                                 ,library('maptools')
-                                 ,library('raster')
                                  ,library('parallel')
-                                 ,library('doParallel')
+                                 ,library('stats')
                                  ,library('foreach')
-                                 ,library('doRNG')
                                  ,library('doSNOW')
                                  ))
 

@@ -75,13 +75,14 @@ class AggDataUndatable(object):
                                                           'upper_1_sigma': np.int64,
                                                           'upper_2_sigma': np.int64}
                                            )
-            __individual_result['measurementid'] = __individual_result['measurementid'].str.replace('.000000', '')
-            __individual_result['measurementid'] = __individual_result['measurementid'].str.replace('00000', '')
-            __individual_result['measurementid'] = __individual_result['measurementid'].str.replace('0000', '')
+            __individual_result['measurementid'] = __individual_result['measurementid'].str.replace('.000000', '', regex = True)
+            __individual_result['measurementid'] = __individual_result['measurementid'].str.replace('00000', '', regex = True)
+            __individual_result['measurementid'] = __individual_result['measurementid'].str.replace('0000', '', regex = True)
             __individual_result['measurementid'] = CoreIDs.iloc[i,0] + ' ' + __individual_result['measurementid']
             __individual_result.insert(7, 'model_name', 'Undatable', True)
             __individual_result.insert(8, 'preselection', dttp, True)
-            self.age_model_result_Undatable = self.age_model_result_Undatable.append(__individual_result)
+            #self.age_model_result_Undatable = self.age_model_result_Undatable.append(__individual_result)
+            self.age_model_result_Undatable = pd.concat([self.age_model_result_Undatable, __individual_result], axis = 0)
         
         self.age_model_result_Undatable = self.age_model_result_Undatable.reset_index(drop = True)
         
@@ -91,7 +92,8 @@ class AggDataUndatable(object):
             __load_temp_age = sio.loadmat(f'{CoreIDs.iloc[i,0]}_temage.mat')
             __individual_temp_age = pd.DataFrame(__load_temp_age['tempage'])
             __individual_temp_age = __individual_temp_age.assign(model_name = 'Undatable')
-            self.Undatable_core_results = self.Undatable_core_results.append(__individual_temp_age)
+            #self.Undatable_core_results = self.Undatable_core_results.append(__individual_temp_age)
+            self.Undatable_core_results = pd.concat([self.Undatable_core_results, __individual_temp_age], axis = 0)
         self.Undatable_core_results = self.Undatable_core_results.reset_index(drop = True)
         self.Undatable_core_results = self.Undatable_core_results.assign(measurementid = self.age_model_result_Undatable['measurementid'])
             
