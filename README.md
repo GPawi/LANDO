@@ -129,6 +129,7 @@ One by one, use these following lines to install all python packages and accept 
 > mamba install pyarrow -c conda-forge
 > conda install pip
 > python -m pip install -r requirements.txt
+> python -m sos_notebook.install
 ~~~
 
 ###### R
@@ -231,6 +232,7 @@ One by one, use these following lines to install all python packages and accept 
 > mamba install pyarrow -c conda-forge
 > conda install pip
 > python -m pip install -r requirements.txt
+> python -m sos_notebook.install
 ~~~
 
 ###### R
