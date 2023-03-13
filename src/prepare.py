@@ -32,7 +32,7 @@ class PrepForUndatable(object):
             while True:
                 self.location_UndatableFolder = input('Please give the location of the Undatable Folder! ')
                 if 'UndatableFolder' not in self.location_UndatableFolder:
-                    print ('Your link does not provide the "UndatableFolder" folder, please try again! ')
+                    print ('Warning: Your link does not provide the "UndatableFolder" folder, please try again! ')
                 else:
                     break
             os.chdir(fr'{self.location_UndatableFolder}')
@@ -99,7 +99,7 @@ class PrepForUndatable(object):
                 temp.to_csv(f'{ID}.txt', header = True, index = False, sep = '\t', lineterminator = os.linesep)
             else:
                 continue
-        print ('New files for Undatable created!')
+        print ('Information: New files for Undatable created!')
         
     def prep_it(self):
         """

@@ -49,11 +49,11 @@ class PushIt(object):
         """
         self.__results__ = self.age_model_result
         if not all(self.__results__) == True:
-            print ('Nothing to upload!')
+            print ('Information: The result list was empty, so nothing was uploaded.')
         elif type(self.__results__) == list:
-            print ('Nothing to upload!')
+            print ('Information: The result list was empty, so nothing was uploaded.')
         elif self.engine == 'No Database':
-            print ('Nothing to upload!')
+            print ('Information: LANDO is not connected to a database, so nothing was uploaded.')
         else:
             self.__measurementids__ = self.age_model_result.copy()
             model = self.model
@@ -98,4 +98,4 @@ class PushIt(object):
             os.remove(f'{self.coreids.iloc[i,0]}.txt')
             os.remove(f'{self.coreids.iloc[i,0]}_admodel.txt')
             os.remove(f'{self.coreids.iloc[i,0]}_temage.mat')
-        print ('All files have been deleted!')
+        print ('Information: All unwanted Undatable files have been deleted')
