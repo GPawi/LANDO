@@ -174,7 +174,6 @@ After that please open `GNU Octave (GUI)` from your desktop or the start menu an
 > pkg install -forge statistics
 > pkg install -forge dataframe
 > pkg install -forge struct
-> pkg install -forge parallel
 ~~~
 
 ###### Kernels
@@ -255,6 +254,20 @@ In our working example, the executable was in this directory `/usr/local/Cellar/
 ~~~
 export OCTAVE_EXECUTABLE=/usr/local/Cellar/octave/6.4.0/bin/octave-cli
 ~~~
+
+You then need to install the relevant Octave packages. For this please open Octave in your terminal by typing:
+~~~
+> octave --no-gui
+~~~
+
+Now execute the following lines in the Octave environment, which can take a while:
+~~~
+> pkg install -forge io
+> pkg install -forge statistics
+> pkg install -forge dataframe
+> pkg install -forge struct
+~~~
+You can leave Octave by typing `exit`.
 
 ###### Kernels
 

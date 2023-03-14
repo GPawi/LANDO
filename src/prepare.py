@@ -108,8 +108,10 @@ class PrepForUndatable(object):
         self.__prep_format_Undatable__()
         self.__prep_file_Undatable__()
         self.coreid_df = pd.DataFrame(self.new_coreid_list, columns = ['coreid'])
-        self.coreid_df = pd.concat([pd.DataFrame(['linebreak'], columns = ['coreid']), self.coreid_df], ignore_index = True)
-
+        self.CoreID_array = self.coreid_df.values
+        #self.coreid_df = pd.concat([pd.DataFrame(['linebreak'], columns = ['coreid']), self.coreid_df], ignore_index = True)
+        
+        
 ### For Bchron ###
 class PrepForBchron(object):
     def __init__(self, all_ages):

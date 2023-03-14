@@ -28,7 +28,7 @@ class AggDataUndatable(object):
         self.prep_Undatable = prep_Undatable
         self.location_UndatableFolder = prep_Undatable.location_UndatableFolder
         self.CoreIDs = prep_Undatable.coreid_df
-        self.CoreIDs = self.CoreIDs[1:].reset_index(drop = True)
+        #self.CoreIDs = self.CoreIDs[1:].reset_index(drop = True)
         self.orig_dir = orig_dir
         self.dttp = dttp
     

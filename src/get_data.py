@@ -101,7 +101,8 @@ class AgeFromDBMultiCores(object):
                                                 'None',
                                                 0,
                                                 0]]), columns = self.__db_all_ages_columns)
-            self.__db_all_surface = self.__db_all_surface.append(self.__surface_df)
+            #self.__db_all_surface = self.__db_all_surface.append(self.__surface_df)
+            self.__db_all_surface = pd.concat([self.__db_all_surface, self.__surface_df], axis = 0)
         self.__db_all_surface.reset_index(drop = True)
         self.__db_all_ages = pd.concat([self.__db_all_ages, self.__db_all_surface])
     
@@ -356,7 +357,8 @@ class AgeFromDBOneCore(object):
                                                 0,
                                                 coreid,
                                                 float(0)]]), columns = self.__db_all_ages_columns)
-        self.__db_all_surface = self.__db_all_surface.append(self.__surface_df)
+        #self.__db_all_surface = self.__db_all_surface.append(self.__surface_df)
+        self.__db_all_surface = pd.concat([self.__db_all_surface, self.__surface_df], axis = 0)
         self.__db_all_surface.reset_index(drop = True)
         self.__db_all_ages = pd.concat([self.__db_all_ages, self.__db_all_surface])
         self.__db_all_ages['compositedepth'] = self.__db_all_ages['compositedepth'].astype(float)
@@ -922,7 +924,8 @@ class AgeFromFileMultiCores(object):
                                                         0, #reservoir_error
                                                         __file_all_expedition_age.iloc[i,0] + str(' 0')]]), #measurementid
                                              columns = self.__input_age_multi_cores_columns)
-            self.__file_all_surface = self.__file_all_surface.append(self.__surface_df)
+            #self.__file_all_surface = self.__file_all_surface.append(self.__surface_df)
+            self.__file_all_surface = pd.concat([self.__file_all_surface, self.__surface_df], axis = 0)
         self.__file_all_surface.reset_index(drop = True)
         self.__file_all_ages_multi_cores = pd.concat([self.__input_age_multi_cores, self.__file_all_surface])
         self.__file_all_ages_multi_cores['compositedepth'] = self.__file_all_ages_multi_cores['compositedepth'].astype(float)

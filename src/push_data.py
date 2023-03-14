@@ -91,7 +91,7 @@ class PushIt(object):
         """
         self.location_UndatableFolder = location_UndatableFolder
         self.coreids = coreids
-        self.coreids = self.coreids[1:].reset_index(drop = True)
+        #self.coreids = self.coreids[1:].reset_index(drop = True)
         #
         os.chdir(fr'{self.location_UndatableFolder}')
         for i in range(0, len(self.coreids)):
