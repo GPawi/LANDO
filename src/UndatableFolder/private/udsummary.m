@@ -1,5 +1,7 @@
 function [summarymat, shadingmat, depthrange, sarsummarymat, sarshadingmat] = udsummary(depthstart, depthend, nsim, agedepmat, interpinterval, inputfile, writedir, bootpc, xfactor, depthcombine, sar)
 
+[dummy,info]=pkg('list');
+
 %--- Summarise the data agedepmat data to discrete depth probabilities
 
 depthrange = [depthstart ceil(depthstart):interpinterval:floor(depthend) depthend]';
@@ -76,7 +78,15 @@ end
 % create probability density cloud for ages
 allprctiles = prctile(tempage,[1:99, 100*(1-erf(2/sqrt(2)))/2, 100*(1-erf(1/sqrt(2)))/2, 100-100*(1-erf(1/sqrt(2)))/2, 100-100*(1-erf(2/sqrt(2)))/2] , 2);
 shadingmat = allprctiles(:,1:99);
-summarymat = [allprctiles(:,[50, 100:end]), nanmean(tempage,2)]; % summarymat is: median, 2siglo, 1siglo, 1sighi, 2sighi, mean
+for i=1:length(info)
+  if strcmp(info{i}.name, "statistics") == 1
+    if compare_versions(info{i}.version, "1.5.2", "<=")
+      summarymat = [allprctiles(:,[50, 100:end]), nanmean(tempage,2)]; % summarymat is: median, 2siglo, 1siglo, 1sighi, 2sighi, mean
+    else
+      summarymat = [allprctiles(:,[50, 100:end]), mean(tempage,2)]; % summarymat is: median, 2siglo, 1siglo, 1sighi, 2sighi, mean
+    endif
+  endif
+end
 
 % create probability density cloud for sedrates
 if sar == 0
