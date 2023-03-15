@@ -15,7 +15,9 @@ import dask.distributed
 from dask.distributed import Client , LocalCluster
 import joblib
 import multiprocessing
+import warnings
 dask.config.set({"distributed.comm.timeouts.tcp": "90s"})
+warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 
 class CalculateSediRate(object):
