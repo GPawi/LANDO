@@ -8,7 +8,7 @@ depthrange = [depthstart ceil(depthstart):interpinterval:floor(depthend) depthen
 depthrange = unique(depthrange);
 if max(depthrange) < depthend
     depthrange = [depthrange; depthend];
-end
+endif
 
 % replace depth nans with very negative values (must all be unique or interp will error)
 numdeps = length(find(isnan(agedepmat(:,2,:))));
@@ -19,6 +19,9 @@ clear replogical
 
 
 tempage = NaN(length(depthrange),nsim);
+
+current_location = cd;
+cd 'private'
 
 % attempt to use faster precompiled binary
 try
@@ -32,7 +35,9 @@ try
     checkmex = sum(nakeinterp1([1; 10],[1; 100],[2:2:9]')) == 180;
   endif
 catch err
-end
+end_try_catch
+
+cd(current_location);
 
 % Check for presence of precompiled binary
 if exist('err','var') == 1
@@ -40,9 +45,8 @@ if exist('err','var') == 1
 	disp('Compiling nakeinterp1.c will increase speed. Using slower interpolation')
 	for i = 1:nsim
 		tempage(:,i) = interp1qr(agedepmat(:,2,i),agedepmat(:,1,i),depthrange);
-	end
-
-end
+	endfor
+endif
 
 % Check that precompiled binary returned correct result before using
 if exist('checkmex','var') == 1
@@ -50,30 +54,29 @@ if exist('checkmex','var') == 1
 		warning('nakeinterp1 binary found but needs to be recompiled (help mex)')
 		for i = 1:nsim
 			tempage(:,i) = interp1qr(agedepmat(:,2,i),agedepmat(:,1,i),depthrange);
-		end
+		endfor
 	else
 		nakedepthrange = depthrange;
 		nakedepthrange(1) = nakedepthrange(1)+(10^-10);
     if ismac() == 1
       for i = 1:nsim
 			  tempage(:,i) = nakeinterp1mac(agedepmat(:,2,i),agedepmat(:,1,i),nakedepthrange);
-		  end
+		  endfor
     elseif ispc() == 1
       for i = 1:nsim
 			  tempage(:,i) = nakeinterp1win(agedepmat(:,2,i),agedepmat(:,1,i),nakedepthrange);
-		  end
+		  endfor
     elseif isunix() == 1
       for i = 1:nsim
 			  tempage(:,i) = nakeinterp1lin(agedepmat(:,2,i),agedepmat(:,1,i),nakedepthrange);
-		  end
+		  endfor
     else
       for i = 1:nsim
 			  tempage(:,i) = nakeinterp1(agedepmat(:,2,i),agedepmat(:,1,i),nakedepthrange);
-		  end
+		  endfor
     endif
-		
-	end
-end
+	endif
+endif
 
 % create probability density cloud for ages
 allprctiles = prctile(tempage,[1:99, 100*(1-erf(2/sqrt(2)))/2, 100*(1-erf(1/sqrt(2)))/2, 100-100*(1-erf(1/sqrt(2)))/2, 100-100*(1-erf(2/sqrt(2)))/2] , 2);
@@ -86,7 +89,7 @@ for i=1:length(info)
       summarymat = [allprctiles(:,[50, 100:end]), mean(tempage,2)]; % summarymat is: median, 2siglo, 1siglo, 1sighi, 2sighi, mean
     endif
   endif
-end
+endfor
 
 % create probability density cloud for sedrates
 if sar == 0
@@ -117,7 +120,7 @@ elseif sar == 1
 	
 	% 4 2siglo, 5 1siglo, 6 1sighi, 7 2sighi
 	sarsummarymat(:,4:7) = sarallprctiles(:,100:end);
-end
+endif
 
 % save to disk
 savename = strrep(inputfile,'.txt','_admodel.txt');
@@ -129,7 +132,7 @@ if depthcombine == 1
 	comtag = 'Yes';
 elseif depthcombine == 0
 	comtag = 'No'; 
-end
+endif
 
 printsar = sarsummarymat;
 printsar(end+1,:) = NaN;
@@ -140,13 +143,13 @@ if sar == 0
 	fprintf(fid_output,'\r\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s','Depth','Median age','Mean age','95.4% age','68.2% age','68.2% age','95.4% age','Median SAR');
 	for i = 1:size(depthrange,1)
 		fprintf(fid_output,'\r\n%f\t%.0f\t%.0f\t%.0f\t%.0f\t%.0f\t%.0f\t%.2f',depthrange(i),summarymat(i,1),summarymat(i,6),summarymat(i,2),summarymat(i,3),summarymat(i,4),summarymat(i,5),printsar(i,3));
-	end
+	endfor
 elseif sar == 1
 		fprintf(fid_output,'\r\n%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s','Depth','Median age','Mean age','95.4% age','68.2% age','68.2% age','95.4% age','Median SAR','95.4% SAR','68.2% SAR','68.2% SAR','95.4% SAR');
 	for i = 1:size(depthrange,1)
 		fprintf(fid_output,'\r\n%f\t%.0f\t%.0f\t%.0f\t%.0f\t%.0f\t%.0f\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f',depthrange(i),summarymat(i,1),summarymat(i,6),summarymat(i,2),summarymat(i,3),summarymat(i,4),summarymat(i,5),printsar(i,3),printsar(i,4),printsar(i,5),printsar(i,6),printsar(i,7));
-	end
-end
+	endfor
+endif
 fclose(fid_output);
 
 % extra
