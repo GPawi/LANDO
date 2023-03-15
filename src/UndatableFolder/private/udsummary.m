@@ -1,6 +1,6 @@
 function [summarymat, shadingmat, depthrange, sarsummarymat, sarshadingmat] = udsummary(depthstart, depthend, nsim, agedepmat, interpinterval, inputfile, writedir, bootpc, xfactor, depthcombine, sar)
 
-[dummy,info]=pkg('list');
+[info]=pkg('list');
 
 %--- Summarise the data agedepmat data to discrete depth probabilities
 
