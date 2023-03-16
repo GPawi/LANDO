@@ -609,8 +609,9 @@ cpts_currts_eval <- function(data_in_proc_obs,
 }
 ##########
 
-### Calculations
-optimization_parallel = function(...){
+if (length(CoreIDs) == 1) {
+  i = 1
+  ### Calculations
   ### Select data/sediment cores from dictionaries that has proxy data
   coreid <- names(proxy_ts)[i]
   core_models <- c(dict_model_name[[coreid]])
@@ -631,7 +632,7 @@ optimization_parallel = function(...){
   for (m in core_models){
     suppressWarnings({
       eval_value <- cpts_currts_eval(core_proxy, core_data[[m]], core_result_list[['Proxy']], core_result_list[[m]])
-      })
+    })
     core_fitting_values[m] <- eval_value$mod_tseries_stats$CORRECT_CPTS_EVAL
   }
   ### Use CoreID to assign core-specific results to overall results
@@ -640,42 +641,86 @@ optimization_parallel = function(...){
   core_result_list <- setNames(list(core_result_list), coreid)
   core_optimization_result <- c(core_result_list, core_fitting_values)
   return(core_optimization_result)
-  }
-
-### Initialize cluster
-no_cores <- detectCores(logical = TRUE)
-if (no_cores < length(names(proxy_ts))) {
-  cl = makeCluster(no_cores*0.8, outfile = "", autoStop = TRUE)
-  } else {cl = makeCluster(length(names(proxy_ts)), outfile = "", autoStop = TRUE)} 
-registerDoSNOW(cl)
-seed <- 211109
-
-## Give data to cluster
-seq_id_all <- 1:length(names(proxy_ts))
-clusterExport(cl,list('dict_SR_median_age','dict_model_name','proxy_ts')) 
-
-## Run function in parallel in cluster
-optimization_result <- foreach(i = seq_id_all
-                               ,.combine = 'c'
-                             #,.combine='rbind'
-                             #,.combine=dplyr::bind_rows
-                             ,.multicombine = TRUE
-                             ,.maxcombine = 1000       ,.packages=c('forecast','tseries','lubridate','changepoint','dplyr','DescTools','sets','FuzzyNumbers','Metrics','knitr','maptools','raster')
-                               ,.options.RNG=seed
-                             ) %dorng% {
-                               tryCatch(
-                                 optimization_parallel(i, dict_SR_median_age, dict_model_name, proxy_ts)
-                                 ,error = function(e){
-                                   message(sprintf(" Caught an error in task %d! (%s)", i, names(proxy_ts)[i]))
-                                   print(e)
-                                 }
-                               )  
-                             }
-
-stopCluster(cl)
-rm(list = "cl")
-gc()
-registerDoSEQ()
+  
+} else{
+  ### Calculations
+  optimization_parallel = function(...){
+    ### Select data/sediment cores from dictionaries that has proxy data
+    coreid <- names(proxy_ts)[i]
+    core_models <- c(dict_model_name[[coreid]])
+    core_data <- dict_SR_median_age[[coreid]]
+    core_proxy <- proxy_ts[[coreid]]
+    ### Initialize core-specific result variables
+    core_result_list <- list()
+    core_fitting_values <- c()
+    ### Calculate change points with confidence intervals for each model
+    for (m in core_models) {
+      CI_for_TS <- cpts_currts_CI(core_data[[m]], curr_minseg, curr_cptmethod, curr_nreps, 'MOD')
+      core_result_list[[m]] <- CI_for_TS$cpt_summar
+    }
+    ### Calculate change point within the proxy data
+    CI_for_TS <- cpts_currts_CI(core_proxy, curr_minseg, curr_cptmethod, curr_nreps, 'OBS')
+    core_result_list[['Proxy']] <- CI_for_TS$cpt_summary
+    ### Compare the fitting between the proxy data and the models
+    for (m in core_models){
+      suppressWarnings({
+        eval_value <- cpts_currts_eval(core_proxy, core_data[[m]], core_result_list[['Proxy']], core_result_list[[m]])
+        })
+      core_fitting_values[m] <- eval_value$mod_tseries_stats$CORRECT_CPTS_EVAL
+    }
+    ### Use CoreID to assign core-specific results to overall results
+    core_fitting_values <- list(core_fitting_values)
+    names(core_fitting_values) <- coreid
+    core_result_list <- setNames(list(core_result_list), coreid)
+    core_optimization_result <- c(core_result_list, core_fitting_values)
+    return(core_optimization_result)
+    }
+  
+  ### Initialize cluster
+  no_cores <- detectCores(logical = TRUE)
+  if (no_cores < length(names(proxy_ts))) {
+    cl = makeCluster(no_cores*0.8, outfile = "", autoStop = TRUE)
+    } else {cl = makeCluster(length(names(proxy_ts)), outfile = "", autoStop = TRUE)} 
+  registerDoSNOW(cl)
+  seed <- 211109
+  
+  ## Give data to cluster
+  seq_id_all <- 1:length(names(proxy_ts))
+  clusterExport(cl,list('dict_SR_median_age','dict_model_name','proxy_ts')) 
+  
+  ## Run function in parallel in cluster
+  optimization_result <- foreach(i = seq_id_all
+                                 ,.combine = 'c'
+                                 ,.multicombine = TRUE
+                                 ,.maxcombine = 1000       
+                                 ,.options.RNG=seed
+                               ) %dorng% {
+                                 suppressPackageStartupMessages(c(library('forecast'),
+                                                                  library('tseries'),
+                                                                  library('lubridate'),
+                                                                  library('changepoint'),
+                                                                  library('dplyr'),
+                                                                  library('DescTools'),
+                                                                  library('sets'),
+                                                                  library('FuzzyNumbers'),
+                                                                  library('Metrics'),
+                                                                  library('knitr'),
+                                                                  library('maptools'),
+                                                                  library('raster')))
+                                 tryCatch(
+                                   optimization_parallel(i, dict_SR_median_age, dict_model_name, proxy_ts)
+                                   ,error = function(e){
+                                     message(sprintf(" Caught an error in task %d! (%s)", i, names(proxy_ts)[i]))
+                                     print(e)
+                                   }
+                                 )  
+                               }
+  
+  stopCluster(cl)
+  rm(list = "cl")
+  gc()
+  registerDoSEQ()
+}
 
 result_list <- list()
 fitting_values <- list()

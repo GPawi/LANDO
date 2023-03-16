@@ -26,8 +26,11 @@ clam_core_results <- foreach(core = seq_id_all
                    ,.combine='rbind'
                    #,.combine=dplyr::bind_rows
                    ,.multicombine = TRUE
-                   ,.maxcombine = 1000
-                   ,.packages=c('tidyverse', 'foreach', 'parallel', 'clam')) %do% {
+                   ,.maxcombine = 1000) %do% {
+                     suppressPackageStartupMessages(c(library('tidyverse'), 
+                                                      library('foreach'), 
+                                                      library('parallel'), 
+                                                      library('clam')))
                      ### Prepare input from each sediment core
                      core_selection <- clam_Frame %>% filter(str_detect(lab_ID, CoreIDs[[core]]))
                      clength <- CoreLengths %>% filter(str_detect(coreid, CoreIDs[[core]]))
@@ -60,8 +63,11 @@ clam_core_results <- foreach(core = seq_id_all
                                              ,.combine='rbind'
                                              #,.combine=dplyr::bind_rows
                                              ,.multicombine = TRUE
-                                             ,.maxcombine = 1000
-                                             ,.packages=c('tidyverse', 'foreach', 'parallel', 'clam')) %dopar% {
+                                             ,.maxcombine = 1000) %dopar% {
+                                               suppressPackageStartupMessages(c(library('tidyverse'), 
+                                                                                library('foreach'), 
+                                                                                library('parallel'), 
+                                                                                library('clam')))
                                                ## Type 1 & Type 3
                                                if (type == 1 || type == 3){
                                                  suppressWarnings(R.devices::suppressGraphics({
@@ -90,8 +96,11 @@ clam_core_results <- foreach(core = seq_id_all
                                                                        ,.combine='rbind'
                                                                        #,.combine=dplyr::bind_rows
                                                                        ,.multicombine = TRUE
-                                                                       ,.maxcombine = 1000
-                                                                       ,.packages=c('tidyverse', 'foreach', 'parallel', 'clam')) %dopar% {
+                                                                       ,.maxcombine = 1000) %dopar% {
+                                                                         suppressPackageStartupMessages(c(library('tidyverse'), 
+                                                                                                          library('foreach'), 
+                                                                                                          library('parallel'), 
+                                                                                                          library('clam')))
                                                                          for (poly_d in degree){
                                                                            suppressWarnings(R.devices::suppressGraphics({
                                                                              z <- capture.output(clam(core=dirbase, coredir=dirnm, type = type, smooth = poly_d, 
@@ -124,8 +133,11 @@ clam_core_results <- foreach(core = seq_id_all
                                                                        ,.combine='rbind'
                                                                        #,.combine=dplyr::bind_rows
                                                                        ,.multicombine = TRUE
-                                                                       ,.maxcombine = 1000
-                                                                       ,.packages=c('tidyverse', 'foreach', 'parallel', 'clam')) %dopar% {
+                                                                       ,.maxcombine = 1000) %dopar% {
+                                                                         suppressPackageStartupMessages(c(library('tidyverse'), 
+                                                                                                          library('foreach'), 
+                                                                                                          library('parallel'), 
+                                                                                                          library('clam')))
                                                                          for (smo1 in s){
                                                                            suppressWarnings(R.devices::suppressGraphics({ 
                                                                              z <- capture.output(clam(core=dirbase, coredir=dirnm, type = type, smooth = smo1, 
@@ -159,8 +171,11 @@ clam_core_results <- foreach(core = seq_id_all
                                                                        #,.combine=dplyr::bind_rows
                                                                        ,.multicombine = TRUE
                                                                        ,.maxcombine = 1000
-                                                                       ,.packages=c('tidyverse', 'foreach', 'parallel', 'clam')
                                                                        ,.errorhandling = 'remove') %dopar% {
+                                                                         suppressPackageStartupMessages(c(library('tidyverse'), 
+                                                                                                          library('foreach'), 
+                                                                                                          library('parallel'), 
+                                                                                                          library('clam')))
                                                                          for (smo2 in k){
                                                                            suppressWarnings(R.devices::suppressGraphics({ 
                                                                              z <- capture.output(clam(core=dirbase, coredir=dirnm, type = type, smooth = smo2, 
