@@ -639,8 +639,8 @@ if (length(CoreIDs) == 1) {
   core_fitting_values <- list(core_fitting_values)
   names(core_fitting_values) <- coreid
   core_result_list <- setNames(list(core_result_list), coreid)
-  core_optimization_result <- c(core_result_list, core_fitting_values)
-  return(core_optimization_result)
+  optimization_result <- c(core_result_list, core_fitting_values)
+  return(optimization_result)
   
 } else{
   ### Calculations

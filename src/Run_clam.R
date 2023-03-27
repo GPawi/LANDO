@@ -78,10 +78,10 @@ clam_core_results <- foreach(core = seq_id_all
                                                  fit <- subset(z, grepl((gsub("[\\]", "", search_fit)), z, fixed = TRUE) == TRUE)
                                                  fit <- as.numeric(sub(search_fit, "", as.character(fit)))
                                                  if (any(grepl(search_rev, z, fixed = TRUE)) == TRUE) {
-                                                   message(sprintf('%s : Too many models with age reversals with type %d', CoreIDs[[core]], type))
+                                                   message(sprintf('Information: Too many models with age reversals in %s with type %d - LANDO will not use this model type', CoreIDs[[core]], type))
                                                    
                                                  } else if (fit == 'Inf' & best_fit == TRUE) {
-                                                   message(sprintf('%s : Inf in model fit; model with type %d will be discarded', CoreIDs[[core]], type))
+                                                   message(sprintf('Information: clam flagged the model fit for %s with "Inf" for type %d - LANDO will not use this model type', CoreIDs[[core]], type))
                                                  } else {
                                                    chron_model <- as.data.frame(chron[, 1:10000]) 
                                                    mid <- outer(CoreIDs[[core]], seq(0, core_max, by = 1), paste)
@@ -110,9 +110,9 @@ clam_core_results <- foreach(core = seq_id_all
                                                                            fit <- subset(z, grepl((gsub("[\\]", "", search_fit)), z, fixed = TRUE) == TRUE)
                                                                            fit <- as.numeric(sub(search_fit, "", as.character(fit)))
                                                                            if (any(grepl(search_rev, z, fixed = TRUE)) == TRUE) {
-                                                                             message(sprintf('%s : Too many models with age reversals with type %d and degree of %d', CoreIDs[[core]], type, poly_d))
+                                                                             message(sprintf('Information: Too many models with age reversals in %s with type %d and degree of %d - LANDO will not use this model type', CoreIDs[[core]], type, poly_d))
                                                                            } else if (fit == 'Inf' & best_fit == TRUE) {
-                                                                             message(sprintf('%s : Inf in model fit; model with type %d and degree of %d will be discarded', CoreIDs[[core]], type, poly_d))
+                                                                             message(sprintf('Information: clam flagged the model fit for %s with "Inf" for type %d and degree of %d - LANDO will not use this model type', CoreIDs[[core]], type, poly_d))
                                                                            } else {
                                                                              chron_model <- as.data.frame(chron[, 1:10000])
                                                                              mid <- outer(CoreIDs[[core]], seq(0, core_max, by = 1), paste)
@@ -147,9 +147,9 @@ clam_core_results <- foreach(core = seq_id_all
                                                                            fit <- subset(z, grepl((gsub("[\\]", "", search_fit)), z, fixed = TRUE) == TRUE)
                                                                            fit <- as.numeric(sub(search_fit, "", as.character(fit)))
                                                                            if (any(grepl(search_rev, z, fixed = TRUE)) == TRUE) {
-                                                                             message(sprintf('%s : Too many models with age reversals with type %d and smooth of %.1f', CoreIDs[[core]], type, smo1))
+                                                                             message(sprintf('Information: Too many models with age reversals in %s with type %d and smooth of %.1f - LANDO will not use this model type', CoreIDs[[core]], type, smo1))
                                                                            } else if (fit == 'Inf' & best_fit == TRUE) {
-                                                                             message(sprintf('%s : Inf in model fit; model with type %d and smooth of %.1f will be discarded', CoreIDs[[core]], type, smo1))
+                                                                             message(sprintf('Information: clam flagged the model fit for %s with "Inf" for type %d and smooth of %.1f - LANDO will not use this model type', CoreIDs[[core]], type, smo1))
                                                                            } else {
                                                                              chron_model <- as.data.frame(chron[, 1:10000])
                                                                              mid <- outer(CoreIDs[[core]], seq(0, core_max, by = 1), paste)
@@ -185,9 +185,9 @@ clam_core_results <- foreach(core = seq_id_all
                                                                            fit <- subset(z, grepl((gsub("[\\]", "", search_fit)), z, fixed = TRUE) == TRUE)
                                                                            fit <- as.numeric(sub(search_fit, "", as.character(fit)))
                                                                            if (any(grepl(search_rev, z, fixed = TRUE)) == TRUE) {
-                                                                             message(sprintf('%s : Too many models with age reversals with type %d and smooth of %.1f', CoreIDs[[core]], type, smo2))
+                                                                             message(sprintf('Information: Too many models with age reversals in %s with type %d and smooth of %.1f - LANDO will not use this model type', CoreIDs[[core]], type, smo2))
                                                                            } else if (fit == 'Inf' & best_fit == TRUE) {
-                                                                             message(sprintf('%s : Inf in model fit; model with type %d and smooth of %.1f will be discarded', CoreIDs[[core]], type, smo2))
+                                                                             message(sprintf('Information: clam flagged the model fit for %s with "Inf" for type %d and smooth of %.1f - LANDO will not use this model type', CoreIDs[[core]], type, smo2))
                                                                            } else {
                                                                              chron_model <- as.data.frame(chron[, 1:10000])
                                                                              mid <- outer(CoreIDs[[core]], seq(0, date_max, by = 1), paste)
