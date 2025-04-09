@@ -8,23 +8,29 @@ WORKDIR /home/jovyan/work
 COPY . /home/jovyan/work
 
 # Install SoS, Octave kernel, and JupyterLab UI
-RUN pip install sos sos-notebook octave_kernel metakernel jupyterlab-sos "jupyterlab<4" && \
+RUN pip install sos sos-r sos-matlab ipysheet ipyfilechooser psycopg2 sos-notebook octave_kernel metakernel jupyterlab-sos "jupyterlab<4" && \
     python3 -m sos_notebook.install 
 
-# Install R kernel (IRkernel) and register with Jupyter
-RUN R -e "install.packages('IRkernel', repos='https://cloud.r-project.org')" \
-    && R -e "IRkernel::installspec()"
+# Install IRkernel and register it
+RUN R -e "install.packages('IRkernel', repos='https://cloud.r-project.org')" && \
+    R -e "IRkernel::installspec(user = FALSE)"
 
-# Install required R packages
-RUN R -e "install.packages(c(\
-  'arrow','Bchron','changepoint','DescTools','devtools','doParallel','doRNG','doSNOW','dplyr','ff','foreach','forecast',\
-  'FuzzyNumbers','IntCal','knitr','lubridate','maptools','Metrics','plyr','R.devices','raster','remotes',\
-  'rstan','sets','tidyverse','tseries'\
-), repos='https://cloud.r-project.org')" \
-    && R -e "remotes::install_github('edwindj/ffbase', subdir='pkg')" \
-    && R -e "remotes::install_github('earthsystemdiagnostics/hamstr')" \
-    && R -e "remotes::install_github('earthsystemdiagnostics/hamstrbacon')" \
-    && R -e "remotes::install_github('Maarten14C/rbacon')"
+# Speed up and streamline R package installs using pak and RSPM
+RUN Rscript -e "install.packages('pak', repos='https://cloud.r-project.org')" && \
+    Rscript -e "options( \
+        repos = c(RSPM = 'https://packagemanager.posit.co/cran/latest'), \
+        build_vignettes = FALSE \
+      ); \
+      Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS = 'true'); \
+      pak::pak(c( \
+        'arrow','Bchron','changepoint','DescTools','devtools','doParallel','doRNG','doSNOW','dplyr','ff','foreach','forecast', \
+        'FuzzyNumbers','IntCal','IRkernel','knitr','lubridate','maptools','Metrics','plyr','R.devices','raster','remotes', \
+        'rstan','sets','tidyverse','tseries', \
+        'edwindj/ffbase', \
+        'earthsystemdiagnostics/hamstr', \
+        'earthsystemdiagnostics/hamstrbacon', \
+        'Maarten14C/rbacon' \
+      ))"
 
 # Switch to root for system-level installs
 USER root
