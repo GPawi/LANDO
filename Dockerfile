@@ -7,13 +7,9 @@ WORKDIR /home/jovyan/work
 # Copy your code into the container
 COPY . /home/jovyan/work
 
-# Install SoS and its Python kernel
-RUN pip install sos sos-notebook \
-    && python3 -m sos_notebook.install
-
-# Downgrade to JupyterLab 3.x to support jupyterlab-sos
-RUN pip install "jupyterlab<4" \
-    && pip install jupyterlab-sos
+# Install SoS, Octave kernel, and JupyterLab UI
+RUN pip install sos sos-notebook octave_kernel metakernel jupyterlab-sos "jupyterlab<4" && \
+    python3 -m sos_notebook.install 
 
 # Install R kernel (IRkernel) and register with Jupyter
 RUN R -e "install.packages('IRkernel', repos='https://cloud.r-project.org')" \
@@ -22,10 +18,11 @@ RUN R -e "install.packages('IRkernel', repos='https://cloud.r-project.org')" \
 # Change the USER
 USER root
 
-# Install Octave runtime (without dev tools)
-RUN apt-get update && apt-get install -y octave
-
-# ⬇️ COPY prebuilt Octave packages from the builder
+# Copy full Octave binary + packages from builder
+COPY --from=octave-pkg-builder /usr/bin/octave /usr/bin/octave
+COPY --from=octave-pkg-builder /usr/lib /usr/lib
+COPY --from=octave-pkg-builder /usr/libexec /usr/libexec
+COPY --from=octave-pkg-builder /usr/share/octave /usr/share/octave
 COPY --from=octave-pkg-builder /opt/octave-pkgs /usr/share/octave/packages
 
 # Let Octave know where to find the installed packages
