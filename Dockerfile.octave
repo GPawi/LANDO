@@ -1,21 +1,22 @@
 FROM gnuoctave/octave:8.3.0 AS octave-pkg-builder
 
-# Install dev tools needed for Forge compilation
+# Install just the build tools — NOT liboctave-dev
 RUN apt-get update && apt-get install -y \
-    liboctave-dev \
     gfortran \
     libhdf5-dev \
     libcurl4-openssl-dev \
     libglpk-dev \
     make \
-    wget
+    wget && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install Forge packages into shared path
+# Install Forge packages into a shared location
 RUN mkdir -p /opt/octave-pkgs && \
     octave --eval "\
-      pkg prefix /opt/octave-pkgs; \ 
+      pkg prefix /opt/octave-pkgs; \
       pkg install -forge io; \
       pkg install -forge statistics; \
       pkg install -forge dataframe; \
       pkg install -forge struct; \
-      pkg list;"
+      pkg list;" && \
+    octave-cli --version
