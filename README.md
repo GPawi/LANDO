@@ -64,7 +64,7 @@ Modeling software | Key Parameters
 :---------------- | ------------------
 Bacon             | `acc.shape`, `acc.mean`, `mem.strength`, `mem.mean`, `ssize`
 clam              | `types_curve`, `smoothness_curve`, `poly_degree_curve`
-hamstr            | `K`
+hamstr            | `K_fine`
 Undatable         | `xfactor`, `bootpc`
 
 For documentation of specific functions, use `help()` in the Python cells (e.g., `help(age_sr_plot.PlotAgeSR.plot_graph)`).
