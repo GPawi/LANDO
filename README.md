@@ -29,15 +29,15 @@ You can run **LANDO** using Docker—no local installations or setup required.
 The LANDO image is available on Docker Hub:
 
 ```bash
-docker pull gpfalz/lando-age-depth
+docker pull gregpfalz/lando-age-depth
 ```
 
-> 📌 Docker Hub page: https://hub.docker.com/r/gpfalz/lando-age-depth
+> 📌 Docker Hub page: https://hub.docker.com/r/gregpfalz/lando-age-depth
 
 ### ▶️ Step 2: Start the container
 
 ```bash
-docker run -it -p 8888:8888 gpfalz/lando-age-depth
+docker run -it -p 8888:8888 gregpfalz/lando-age-depth
 ```
 
 Then open [http://localhost:8888/lab/tree/LANDO.ipynb](http://localhost:8888/lab/tree/LANDO.ipynb) in your browser to launch the notebook.
@@ -52,7 +52,7 @@ Python | 3.11
 R      | 4.3.1  
 Octave | 8.3.0  
 
-_MATLAB support is not bundled due to licensing but can be added manually if desired._
+_MATLAB support is not bundled due to licensing._
 
 ---
 
@@ -79,6 +79,6 @@ Distributed under the GNU GPLv3 License. See `LICENSE.txt` for details.
 
 ## Contact
 
-Gregor Pfalz – [Gregor.Pfalz@awi.de](mailto:Gregor.Pfalz@awi.de)  
-Twitter: [@ClimateCompathy](https://twitter.com/ClimateCompathy)  
+Gregor Pfalz – [Gregor.Pfalz@aon.com](mailto:Gregor.Pfalz@aon.com)  
+Bluesky: [@ClimateCompathy](https://bsky.app/profile/climatecompathy.bsky.social)  
 Project repository: [https://github.com/GPawi/LANDO](https://github.com/GPawi/LANDO)
