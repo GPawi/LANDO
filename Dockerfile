@@ -21,6 +21,12 @@ RUN R -e "install.packages('IRkernel', repos='https://cloud.r-project.org')" && 
 # Copy pre-installed R packages from builder stage
 COPY --from=r-lib-builder /opt/conda/lib/R/library /opt/conda/lib/R/library
 
+# Set library path for the jovyan user
+RUN echo '.libPaths("/opt/conda/lib/R/library")' >> /home/jovyan/.Rprofile
+
+# Ensure correct permissions for packages like 'arrow'
+RUN chown -R jovyan:users /opt/conda/lib/R/library/arrow
+
 # Switch to root for system-level installs
 USER root
 

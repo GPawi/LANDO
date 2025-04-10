@@ -10,6 +10,7 @@ ENV RENV_CONFIG_DISABLE_CACHE=TRUE
 
 # Install system dependencies for compiling R packages (e.g., arrow, rstan)
 RUN apt-get update && apt-get install -y \
+    libgdal-dev libgeos-dev libproj-dev \
     build-essential gfortran \
     libcurl4-openssl-dev libssl-dev libxml2-dev \
     libzstd-dev liblz4-dev libsnappy-dev libbrotli-dev \
@@ -22,9 +23,15 @@ RUN mkdir -p /etc/R && \
     echo "CXX14FLAGS=-O3 -march=native -mtune=native" >> /etc/R/Makevars && \
     echo "CXX14=g++" >> /etc/R/Makevars
 
+# Install Arrow for R via Conda (fast, binary-based)
+RUN mamba install -y -c conda-forge r-arrow
+    
 # Copy and install CRAN packages
 COPY install_r_packages.R /tmp/install_r_packages.R
 RUN Rscript /tmp/install_r_packages.R
+
+# Reinstall stringi from source to fix ICU mismatch
+RUN Rscript -e "install.packages('stringi', type = 'source', repos = 'https://cran.r-project.org')"
 
 # Copy and install GitHub packages
 COPY install_remotes.R /tmp/install_remotes.R
