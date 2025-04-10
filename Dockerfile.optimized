@@ -8,6 +8,10 @@ ENV RSPM=https://packagemanager.posit.co/cran/latest
 ENV R_REMOTES_NO_ERRORS_FROM_WARNINGS=true
 ENV RENV_CONFIG_DISABLE_CACHE=TRUE
 
+# Use your GitHub token to avoid rate limits
+ARG GITHUB_PAT
+ENV GITHUB_PAT=${GITHUB_PAT}
+
 # Install system dependencies for compiling R packages (e.g., arrow, rstan)
 RUN apt-get update && apt-get install -y \
     libgdal-dev libgeos-dev libproj-dev \
