@@ -98,11 +98,18 @@ RUN apt-get update && apt-get install -y \
 
 # Copy full Octave binary + packages from builder
 COPY --from=octave-pkg-builder /usr/local /usr/local
-COPY --from=octave-pkg-builder /opt/octave-pkgs /usr/share/octave/packages
+#COPY --from=octave-pkg-builder /opt/octave-pkgs /usr/share/octave/packages
 
 # Let Octave know where to find the installed packages
 ENV OCTAVE_EXECUTABLE=/usr/local/bin/octave
-ENV OCTAVE_PATH=/usr/share/octave/package
+#ENV OCTAVE_PATH=/usr/share/octave/packages
+
+# Rebuild INDEX files for each copied package
+RUN for d in /usr/local/share/octave/packages/*; do \
+      if [ -d "$d" ]; then \
+        octave --eval "pkg rebuild('${d}')" || true; \
+      fi; \
+    done
 
 # Back to notebook user
 USER $NB_UID

@@ -14,15 +14,15 @@ if (length(RC_CoreIDs) == 1) {
   i = 1
   ## Load data and calibrate
   RC_Frame = RC_Frame %>%
-    mutate(across(everything(), type.convert, as.is = TRUE)) %>%
+    mutate(across(everything(), ~type.convert(.x, as.is = TRUE))) %>%
     mutate(across(c("ages", "ageSds"), as.integer))
   cal.ages = BchronCalibrate(ages = RC_Frame$ages, ageSds = RC_Frame$ageSds, calCurves = RC_Frame$calCurves, allowOutside = TRUE)
   suppressWarnings({
     RC_Frame$ages_calib <- sapply(cal.ages, function(x){
-      hamstr::SummariseEmpiricalPDF(x$ageGrid, x$densities)["mean"]
+      hamstr:::SummariseEmpiricalPDF(x$ageGrid, x$densities)["mean"]
     })
     RC_Frame$ages_calib_Sds <- sapply(cal.ages, function(x){
-      hamstr::SummariseEmpiricalPDF(x$ageGrid, x$densities)["sd"]
+      hamstr:::SummariseEmpiricalPDF(x$ageGrid, x$densities)["sd"]
     })
   })
   
