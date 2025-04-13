@@ -8,27 +8,80 @@ WORKDIR /home/jovyan/work
 COPY . /home/jovyan/work
 
 # Install SoS, Octave kernel, and JupyterLab UI
-RUN pip install sos sos-r sos-matlab ipysheet ipyfilechooser psycopg2-binary sos-notebook octave_kernel metakernel jupyterlab-sos "jupyterlab<4" && \
-    python3 -m sos_notebook.install 
+RUN pip install \
+    sos \
+    sos-r \
+    sos-python \
+    sos-matlab \
+    ipysheet \
+    ipyfilechooser \
+    psycopg2-binary \
+    sos-notebook \
+    octave_kernel \
+    metakernel \
+    jupyterlab-sos \
+    setuptools \
+    "jupyterlab<4.1" && \
+    # Install SoS and language kernels
+    python3 -m sos_notebook.install --sys-prefix
 
 # Set library environment
 ENV R_LIBS_SITE=/opt/conda/lib/R/library
+ENV LD_LIBRARY_PATH=/opt/conda/lib:/opt/conda/lib/R/lib:/usr/local/lib
 
 # Register the R kernel
 RUN R -e "install.packages('IRkernel', repos='https://cloud.r-project.org')" && \
     R -e "IRkernel::installspec(user = FALSE)"
 
+# Install shared R + Python data exchange libraries via conda (Arrow, Feather)
+RUN mamba install -y -c conda-forge \
+    r-arrow \
+    pyarrow \
+    feather-format
+
 # Copy pre-installed R packages from builder stage
 COPY --from=r-lib-builder /opt/conda/lib/R/library /opt/conda/lib/R/library
 
-# Set library path for the jovyan user
-RUN echo '.libPaths("/opt/conda/lib/R/library")' >> /home/jovyan/.Rprofile
-
-# Ensure correct permissions for packages like 'arrow'
-RUN chown -R jovyan:users /opt/conda/lib/R/library/arrow
-
-# Switch to root for system-level installs
+# Switch to root for system-level installations
 USER root
+
+# Install dev tools and system libraries
+RUN apt-get update && apt-get install -y \
+    build-essential gfortran \
+    libcurl4-openssl-dev libssl-dev libxml2-dev \
+    libhdf5-openmpi-103 libglpk40 libreadline8 \
+    libfftw3-double3 libfftw3-3 libfftw3-single3 libgraphicsmagick++-q16-12 \
+    libcholmod3 libamd2 libcolamd2 libccolamd2 libcxsparse3 \
+    libsuitesparseconfig5 libumfpack5 libspqr2 libarpack2 libqrupdate1 \
+    libgl2ps1.4 libopenblas0 libglu1-mesa libgl1 libx11-6 \
+    libfontconfig1 libfreetype6 libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ensure compiler works (for diagnosing build errors)
+RUN echo 'int main() { return 0; }' > test.cpp && g++ test.cpp -o test && ./test && echo "C++ compiler works"
+
+# Set compiler flags for R builds
+RUN mkdir -p /etc/R && \
+    echo 'CC = /usr/bin/gcc' >> /etc/R/Makevars && \
+    echo 'CXX = /usr/bin/g++' >> /etc/R/Makevars && \
+    echo 'CXX11 = /usr/bin/g++' >> /etc/R/Makevars && \
+    echo 'CXX14 = /usr/bin/g++' >> /etc/R/Makevars && \
+    echo 'CXX17 = /usr/bin/g++' >> /etc/R/Makevars && \
+    echo 'CXX20 = /usr/bin/g++' >> /etc/R/Makevars && \
+    echo 'CXXFLAGS = -O2 -pipe -march=native -mtune=native' >> /etc/R/Makevars && \
+    echo 'CXX11FLAGS = $(CXXFLAGS)' >> /etc/R/Makevars && \
+    echo 'CXX14FLAGS = $(CXXFLAGS)' >> /etc/R/Makevars && \
+    echo 'CXX17FLAGS = $(CXXFLAGS)' >> /etc/R/Makevars && \
+    echo 'CXX20FLAGS = $(CXXFLAGS)' >> /etc/R/Makevars
+
+# Lock arrow and stringi to prevent accidental reinstall
+RUN chmod -R a-w /opt/conda/lib/R/library/arrow || true && \
+    chmod -R a-w /opt/conda/lib/R/library/stringi || true
+
+# Set optional R install behaviors (disable source fallback)
+RUN echo 'options(install.packages.check.source = "no")' >> /home/jovyan/.Rprofile && \
+    echo 'options(pkgType = "binary")' >> /home/jovyan/.Rprofile && \
+    echo '.libPaths("/opt/conda/lib/R/library")' >> /home/jovyan/.Rprofile
 
 # Ensure old version is gone
 RUN rm -f /usr/bin/octave /usr/bin/octave-cli

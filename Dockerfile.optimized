@@ -16,6 +16,7 @@ ENV GITHUB_PAT=${GITHUB_PAT}
 RUN apt-get update && apt-get install -y \
     libgdal-dev libgeos-dev libproj-dev \
     build-essential gfortran \
+    g++ \
     libcurl4-openssl-dev libssl-dev libxml2-dev \
     libzstd-dev liblz4-dev libsnappy-dev libbrotli-dev \
     libboost-all-dev \
@@ -29,13 +30,13 @@ RUN mkdir -p /etc/R && \
 
 # Install Arrow for R via Conda (fast, binary-based)
 RUN mamba install -y -c conda-forge r-arrow
-    
+
+# Ensure the shared libraries are found at runtime
+ENV LD_LIBRARY_PATH=/opt/conda/lib:/usr/local/lib
+
 # Copy and install CRAN packages
 COPY install_r_packages.R /tmp/install_r_packages.R
 RUN Rscript /tmp/install_r_packages.R
-
-# Reinstall stringi from source to fix ICU mismatch
-RUN Rscript -e "install.packages('stringi', type = 'source', repos = 'https://cran.r-project.org')"
 
 # Copy and install GitHub packages
 COPY install_remotes.R /tmp/install_remotes.R
