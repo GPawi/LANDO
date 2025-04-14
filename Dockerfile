@@ -111,5 +111,12 @@ RUN for d in /usr/local/share/octave/packages/*; do \
       fi; \
     done
 
+# Set default Octave package directory
+RUN echo "pkg prefix('/usr/local/share/octave/packages'); pkg local_list('/usr/local/share/octave/octave_packages');" > /usr/local/share/octave/site/m/startup/octaverc
+
+# Set persistent Octave path for iser
+RUN echo "addpath('/src/UndatableFolder')" >> /home/jovyan/.octaverc && \
+    chown jovyan:users /home/jovyan/.octaverc
+
 # Back to notebook user
 USER $NB_UID
