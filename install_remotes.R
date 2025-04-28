@@ -19,7 +19,8 @@ pkgs <- list(
   list(repo = "Maarten14C/rbacon"),
   list(repo = "andrewcparnell/Bchron"),
   list(repo = "earthsystemdiagnostics/hamstr"),
-  list(repo = "earthsystemdiagnostics/hamstrbacon")
+  #list(repo = "earthsystemdiagnostics/hamstrbacon")
+  list(repo = "GPawi/hamstrbacon", ref = "modernize-bacon2-rbacon")
 )
 
 # Install each package, catching errors and preserving state
