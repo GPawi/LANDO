@@ -11,7 +11,7 @@ cran_repo <- "https://cran.r-project.org"
 cran_pkgs <- c(
   "changepoint", "DescTools", "devtools",
   "doParallel", "doRNG", "doSNOW", "dplyr", "ff", "foreach", "forecast",
-  "FuzzyNumbers", "IntCal", "knitr", "lubridate",
+  "FuzzyNumbers", "rintcal", "knitr", "lubridate",
   "Metrics", "plyr", "R.devices", "raster", "remotes",
   "rstan", "sets", "tidyverse", "tseries", "clam"
 )

@@ -84,11 +84,11 @@ RUN echo 'options(install.packages.check.source = "no")' >> /home/jovyan/.Rprofi
     echo '.libPaths("/opt/conda/lib/R/library")' >> /home/jovyan/.Rprofile
 
 # Add IntCal20 calibration curves with proper filenames
-RUN mkdir -p /opt/conda/lib/R/library/IntCal/extdata && \
-    curl -sSL https://intcal.org/IntCal20Files/intcal20.14c -o /opt/conda/lib/R/library/IntCal/extdata/3Col_intcal20.14C && \
-    curl -sSL https://intcal.org/IntCal20Files/marine20.14c -o /opt/conda/lib/R/library/IntCal/extdata/3Col_marine20.14C && \
-    curl -sSL https://intcal.org/IntCal20Files/shcal20.14c -o /opt/conda/lib/R/library/IntCal/extdata/3Col_shcal20.14C && \
-    curl -sSL https://intcal.org/IntCal20Files/constcal20.14c -o /opt/conda/lib/R/library/IntCal/extdata/3Col_constcal20.14C
+#RUN mkdir -p /opt/conda/lib/R/library/IntCal/extdata && \
+#    curl -sSL https://intcal.org/IntCal20Files/intcal20.14c -o /opt/conda/lib/R/library/IntCal/extdata/3Col_intcal20.14C && \
+#    curl -sSL https://intcal.org/IntCal20Files/marine20.14c -o /opt/conda/lib/R/library/IntCal/extdata/3Col_marine20.14C && \
+#    curl -sSL https://intcal.org/IntCal20Files/shcal20.14c -o /opt/conda/lib/R/library/IntCal/extdata/3Col_shcal20.14C && \
+#    curl -sSL https://intcal.org/IntCal20Files/constcal20.14c -o /opt/conda/lib/R/library/IntCal/extdata/3Col_constcal20.14C
 
 # Ensure old version is gone
 RUN rm -f /usr/bin/octave /usr/bin/octave-cli

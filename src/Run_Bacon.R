@@ -3,7 +3,7 @@ suppressPackageStartupMessages({
   library(hamstr)
   library(rbacon)
   library(hamstrbacon)
-  library(IntCal)
+  library(rintcal)
   library(tidyverse)
   library(parallel)
   library(foreach)
@@ -13,10 +13,10 @@ suppressPackageStartupMessages({
   library(ffbase)
   library(data.table)
   library(stringr)
-  library(progress)
 })
 
-# Convert to data.table for fast filtering
+Bacon.cleanup()
+
 Bacon_Frame <- as.data.table(Bacon_Frame)
 CoreLengths <- as.data.table(CoreLengths)
 
@@ -25,7 +25,6 @@ if (length(CoreIDs) == 1) {
   i <- 1
   core_id <- CoreIDs[[i]]
 
-  # Filter without needing a new column
   core_selection <- Bacon_Frame[str_detect(id, paste0("^", core_id, " "))]
   clength <- CoreLengths[coreid == core_id]
 
@@ -33,20 +32,11 @@ if (length(CoreIDs) == 1) {
   max_retry <- 5
   current_ssize <- ssize
   success <- FALSE
-
-  # Create a progress bar
-  pb <- progress_bar$new(
-    format = "[:bar] Attempt :current/:total | ssize=:ssize :message",
-    total = max_retry,
-    clear = FALSE,
-    width = 70
-  )
-
+  
   while (retry < max_retry && !success) {
-    message(sprintf("Running Bacon for core %s (attempt %d, ssize = %d)", core_id, retry + 1, current_ssize))
-    pb$tick(tokens = list(ssize = current_ssize, message = ""))
+  message(sprintf("Running Bacon for core %s (attempt %d, ssize = %d)", core_id, retry + 1, current_ssize))
 
-    withCallingHandlers({
+  withCallingHandlers({
       run <- hamstr_bacon(
         id = core_selection$id,
         depth = core_selection$depth,
@@ -61,7 +51,10 @@ if (length(CoreIDs) == 1) {
         mem.strength = mem.strength,
         mem.mean = mem.mean,
         ssize = current_ssize,
-        thick = 1
+        thick = 1,
+        verbose = TRUE,
+        suggest = rbacon.change.acc.mean,
+        accept.suggestions = rbacon.change.acc.mean
       )
     }, warning = function(w) {
       if (grepl("longer object length is not a multiple", conditionMessage(w))) {
@@ -69,62 +62,51 @@ if (length(CoreIDs) == 1) {
       }
     })
 
-    age.mods.interp <- predict(run, depth = seq(0, clength$corelength, by = 1))
-    achieved_iters <- max(age.mods.interp$iter, na.rm = TRUE)
+  age.mods.interp <- predict(run, depth = seq(0, clength$corelength, by = 1))
+  achieved_iters <- max(age.mods.interp$iter, na.rm = TRUE)
 
-    if (achieved_iters >= 10001) {
-      success <- TRUE
-    } else {
-      retry <- retry + 1
-      needed_iters <- 10001 - achieved_iters
-      current_ssize <- ceiling(current_ssize + (needed_iters * 2.5))
-      message(sprintf("Retry %d: only %d iterations. Increasing ssize to %d", retry, achieved_iters, current_ssize))
-    }
+  if (achieved_iters >= 10001) {
+    success <- TRUE
+  } else {
+    retry <- retry + 1
+    needed_iters <- 10001 - achieved_iters
+    current_ssize <- ceiling(current_ssize + (needed_iters * 2.5))
+    message(sprintf("Retry %d: only %d iterations. Increasing ssize to %d", retry, achieved_iters, current_ssize))
   }
+}
 
   if (!success) {
     stop(sprintf("❌ Failed to generate ≥10001 iterations for core %s after %d attempts", core_id, max_retry))
   }
 
-  # Use data.table to reshape results
   age.mods.interp_dt <- as.data.table(age.mods.interp)
   age.mods.interp_dt[, depth := paste(core_id, as.character(depth))]
-  result <- dcast(age.mods.interp_dt, depth ~ iter, value.var = "age")
+  Bacon_core_results <- dcast(age.mods.interp_dt, depth ~ iter, value.var = "age")
 
   message(sprintf("✅ Done with core %s", core_id))
-  return(result)
-}
+  return(Bacon_core_results)
 
-# --- MULTI-CORE ---
+} else {
+
+# --- MULTI-CORE EXECUTION ---
 options(fftempdir = "src/temp/ff")
 
 Bacon_parallel <- function(i, Bacon_Frame, CoreIDs) {
   core_id <- CoreIDs[[i]]
-  core_selection <- Bacon_Frame %>%
-    filter(str_detect(id, paste0("^", core_id, " ")))
+  core_selection <- Bacon_Frame %>% filter(str_detect(id, paste0("^", core_id, " ")))
   clength <- CoreLengths %>% filter(coreid == core_id)
 
-  withCallingHandlers({
-    run <- hamstr_bacon(
-      id = core_selection$id,
-      depth = core_selection$depth,
-      obs_age = core_selection$obs_age,
-      obs_err = core_selection$obs_err,
-      d.max = clength$corelength,
-      cc = core_selection$cc,
-      delta.R = core_selection$delta_R,
-      delta.STD = core_selection$delta_STD,
-      acc.shape = acc.shape,
-      acc.mean = acc.mean,
-      mem.strength = mem.strength,
-      mem.mean = mem.mean,
-      ssize = ssize,
-      thick = 1
-    )}, warning = function(w) {
-      if (grepl("longer object length is not a multiple", conditionMessage(w))) {
-        invokeRestart("muffleWarning") # ignore just this warning
-      }
-  })
+  dets_file <- tempfile(fileext = ".csv")
+  write.csv(core_selection, file = dets_file, row.names = FALSE)
+
+  run <- hamstr_bacon(dets = dets_file,
+                      d.max = clength$corelength,
+                      acc.shape = acc.shape,
+                      acc.mean = acc.mean,
+                      mem.strength = mem.strength,
+                      mem.mean = mem.mean,
+                      ssize = ssize,
+                      thick = 1)
 
   age.mods.interp <- as.ffdf(predict(run, depth = seq(0, clength$corelength, by = 1)))
   while (max(age.mods.interp$iter) < 10001) {
@@ -132,27 +114,14 @@ Bacon_parallel <- function(i, Bacon_Frame, CoreIDs) {
     new_ssize <- ceiling(ssize + (diff_iter * 2.5))
     message(sprintf("Retrying core %s with ssize = %d", core_id, new_ssize))
 
-    withCallingHandlers({
-      run <- hamstr_bacon(
-        id = core_selection$id,
-        depth = core_selection$depth,
-        obs_age = core_selection$obs_age,
-        obs_err = core_selection$obs_err,
-        d.max = clength$corelength,
-        cc = core_selection$cc,
-        delta.R = core_selection$delta_R,
-        delta.STD = core_selection$delta_STD,
-        acc.shape = acc.shape,
-        acc.mean = acc.mean,
-        mem.strength = mem.strength,
-        mem.mean = mem.mean,
-        ssize = new_ssize,
-        thick = 1
-      )}, warning = function(w) {
-        if (grepl("longer object length is not a multiple", conditionMessage(w))) {
-        invokeRestart("muffleWarning") # ignore just this warning
-      }
-  })
+    run <- hamstr_bacon(dets = dets_file,
+                        d.max = clength$corelength,
+                        acc.shape = acc.shape,
+                        acc.mean = acc.mean,
+                        mem.strength = mem.strength,
+                        mem.mean = mem.mean,
+                        ssize = new_ssize,
+                        thick = 1)
 
     age.mods.interp <- as.ffdf(predict(run, depth = seq(0, clength$corelength, by = 1)))
   }
@@ -161,7 +130,7 @@ Bacon_parallel <- function(i, Bacon_Frame, CoreIDs) {
   age.mods.interp$depth <- ff(paste(core_id, age.mods.interp$depth))
   out <- pivot_wider(as.data.frame(age.mods.interp), names_from = iter, values_from = age)
 
-  message(sprintf("Done with core %s — number %d of %d", core_id, i, length(CoreIDs)))
+  message(sprintf("✅ Done with core %s — number %d of %d", core_id, i, length(CoreIDs)))
   return(out)
 }
 
@@ -183,7 +152,7 @@ Bacon_core_results <- foreach(i = seq_id_all,
                               .inorder = FALSE) %dorng% {
   suppressPackageStartupMessages({
     library(tidyverse)
-    library(IntCal)
+    library(rintcal)
     library(rbacon)
     library(hamstr)
     library(hamstrbacon)
@@ -201,3 +170,4 @@ stopCluster(cl)
 registerDoSEQ()
 
 return(Bacon_core_results)
+}
