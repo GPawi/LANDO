@@ -5,8 +5,8 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - .:/home/jovyan/work
+      - ../:/home/jovyan/work
+      - ../tmp_host:/tmp
     environment:
       - PYDEVD_DISABLE_FILE_VALIDATION=1
     command: start-notebook.py --NotebookApp.token='' --NotebookApp.default_url=/lab/tree/LANDO.ipynb
-
