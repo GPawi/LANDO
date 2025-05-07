@@ -37,18 +37,34 @@ if (!rbacon.change.thick) {
 
 ## Interpolation function
 interpolate_bacon_output_ff <- function(info, depth_seq = NULL) {
-  if (is.null(info$output) || ncol(info$output) < 3)
-    stop("Bacon output is missing or malformed.")
+  # Try to load output from file if missing
+  if (is.null(info$output)) {
+    out_file <- list.files(file.path(info$coredir, info$core), pattern = "\\.out$", full.names = TRUE)
+    if (length(out_file) == 1) {
+      posterior <- tryCatch({
+        as.matrix(read.table(out_file, header = FALSE))
+      }, error = function(e) NULL)
+      if (is.null(posterior)) stop("Could not read Bacon output from .out file.")
+      info$output <- posterior
+    } else {
+      stop("No Bacon output available in memory or file.")
+    }
+  }
+
+  # Check the structure of the posterior
+  posterior <- info$output
+  if (ncol(posterior) < 3) stop("Bacon output is malformed or incomplete.")
 
   thick <- info$thick
   d.min <- info$d.min
   d.max <- info$d.max
+  core_id <- info$core  # new
 
   if (is.null(depth_seq)) {
     depth_seq <- seq(d.min, d.max, by = 1)
   }
 
-  posterior <- info$output
+  # Age accumulation per iteration
   cum_ages <- apply(posterior[, 1:(ncol(posterior) - 2)], 1, cumsum)
   elbows <- d.min + (seq_len(nrow(cum_ages)) - 1) * thick
 
@@ -59,7 +75,10 @@ interpolate_bacon_output_ff <- function(info, depth_seq = NULL) {
   interpolated_mat <- do.call(cbind, interpolated)
   colnames(interpolated_mat) <- paste0("iter_", seq_len(ncol(interpolated_mat)))
 
-  ff_interpolated <- ff::as.ffdf(data.frame(depth = depth_seq, interpolated_mat))
+  # 🧠 Replace "depth" with combined label BEFORE conversion
+  core_depth_labels <- paste(core_id, depth_seq)
+  ff_interpolated <- ff::as.ffdf(data.frame(depth = factor(core_depth_labels), interpolated_mat))
+
   return(ff_interpolated)
 }
 
@@ -74,7 +93,9 @@ lando_bacon <- function(core_id, depths, ages, errors,
                         coredir = tempdir(),
                         runname = "",
                         ...) {
-
+  
+  try(Bacon.cleanup(), silent = TRUE)
+  
   if (is.na(d.min)) d.min <- min(depths, na.rm = TRUE)
   if (is.na(d.max)) d.max <- max(depths, na.rm = TRUE)
 
@@ -94,6 +115,7 @@ lando_bacon <- function(core_id, depths, ages, errors,
   utils::write.csv(dets, file = file.path(core_path, paste0(core_id, ".csv")),
                    row.names = FALSE, quote = FALSE)
 
+  pdf(NULL)
   info <- rbacon::Bacon(
     core = core_id,
     coredir = coredir,
@@ -114,6 +136,7 @@ lando_bacon <- function(core_id, depths, ages, errors,
     close.connections = TRUE,
     ...
   )
+  dev.off()
 
   return(info)
 }
@@ -131,27 +154,6 @@ Bacon_parallel <- function(i, Bacon_Frame, CoreIDs) {
 
   while (retry < max_retry && !success) {
     message(sprintf("Running Bacon for core %s (attempt %d, ssize = %d)", core_id, retry + 1, current_ssize))
-
-    # Add synthetic bottom constraint
-    if (clength$corelength > max(core_selection$depth, na.rm = TRUE)) {
-      max_real_depth <- max(core_selection$depth, na.rm = TRUE)
-      bottom_obs <- core_selection %>% filter(depth == max_real_depth) %>% slice(1)
-      bottom_guess <- bottom_obs$obs_age
-
-      boundary_row <- tibble(
-        id = paste(core_id, clength$corelength),
-        depth = clength$corelength,
-        obs_age = bottom_guess,
-        obs_err = 10000,
-        cc = 0,
-        delta_R = 0,
-        delta_STD = 0
-      )
-
-      core_selection <- bind_rows(core_selection, boundary_row)
-    }
-
-    proposed_burnin <- round(1.5 * current_ssize)
 
     run <- tryCatch({
       lando_bacon(
@@ -171,7 +173,6 @@ Bacon_parallel <- function(i, Bacon_Frame, CoreIDs) {
         thick = thick_val,
         suggest = rbacon.change.acc.mean,
         accept.suggestions = rbacon.change.acc.mean,
-        burnin = proposed_burnin
       )
     }, error = function(e) {
       message(sprintf("❌ Bacon error on attempt %d: %s", retry + 1, e$message))
@@ -186,7 +187,10 @@ Bacon_parallel <- function(i, Bacon_Frame, CoreIDs) {
 
     age.mods.interp <- tryCatch(
       interpolate_bacon_output_ff(run, depth_seq = seq(0, clength$corelength, by = 1)),
-      error = function(e) NULL
+      error = function(e) {
+        message(sprintf("❌ Bacon error on attempt %d: %s", retry + 1, e$message))
+        NULL
+      }
     )
 
     if (is.null(age.mods.interp)) {
@@ -213,11 +217,17 @@ Bacon_parallel <- function(i, Bacon_Frame, CoreIDs) {
     stop(sprintf("❌ Failed to generate ≥10001 iterations for core %s after %d attempts", core_id, max_retry))
   }
 
-  age.mods.interp$depth <- ff::ff(paste(core_id, age.mods.interp$depth[]))
-  message(sprintf("✅ Done with core %s — number %d of %d", core_id, i, length(CoreIDs)))
+  # Convert ffdf to regular data.frame for final transformation
+  out <- as.data.frame(age.mods.interp)
 
-  return(age.mods.interp)
+  message(sprintf("✅ Done with core %s — number %d of %d", core_id, i, length(CoreIDs)))
+  
+  unlink(run$coredir, recursive = TRUE, force = TRUE)
+
+  return(out)
+
 }
+
 
 # --- SINGLE CORE (Treated as parallel with 1 worker) ---
 if (length(CoreIDs) == 1) {
@@ -257,6 +267,8 @@ if (length(CoreIDs) == 1) {
 
   stopCluster(cl)
   registerDoSEQ()
+
+  try(Bacon.cleanup(), silent = TRUE)
 
   return(Bacon_core_results)
 
@@ -300,6 +312,8 @@ if (length(CoreIDs) == 1) {
 
   stopCluster(cl)
   registerDoSEQ()
+
+  try(Bacon.cleanup(), silent = TRUE)
 
   return(Bacon_core_results)
 }

@@ -4,7 +4,7 @@
 cd "$(dirname "$0")"
 
 # Ensure tmp_host exists in project root
-mkdir -p tmp_host
+mkdir -p ./src/tmp_host
 
 # Launch Docker Compose using the relative path to the YAML file
 echo "🚀 Starting LANDO environment..."
@@ -32,8 +32,8 @@ if [[ $SUCCESS -ne 1 ]]; then
   exit 1
 fi
 
-# Gracefully shut down container on Ctrl+C
-trap 'echo "🧹 Stopping LANDO..."; docker-compose -f ./setup/docker-compose.yml down; exit 0' INT
+# Gracefully shut down container and clean up on Ctrl+C
+trap 'echo "🧹 Stopping LANDO..."; docker-compose -f ./setup/docker-compose.yml down; echo "🧹 Cleaning up tmp_host..."; rm -rf ./src/tmp_host; exit 0' INT
 
 # Open browser
 echo "🚀 Opening LANDO in your browser..."
