@@ -268,8 +268,6 @@ if (length(CoreIDs) == 1) {
   stopCluster(cl)
   registerDoSEQ()
 
-  try(Bacon.cleanup(), silent = TRUE)
-
   return(Bacon_core_results)
 
 } else {
@@ -312,8 +310,6 @@ if (length(CoreIDs) == 1) {
 
   stopCluster(cl)
   registerDoSEQ()
-
-  try(Bacon.cleanup(), silent = TRUE)
 
   return(Bacon_core_results)
 }
