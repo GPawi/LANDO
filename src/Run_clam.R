@@ -1,4 +1,4 @@
-### LANDO Clam runner script — double parallelization with clean logging and robust combining ###
+### LANDO Clam runner script — stable double parallelization with clean logging ###
 
 suppressPackageStartupMessages({
   library(clam)
@@ -10,28 +10,26 @@ suppressPackageStartupMessages({
   library(R.devices)
 })
 
-# Initialize outer cluster
-n_cores <- floor(detectCores(logical = TRUE) * 0.8)
-cl <- makeCluster(n_cores, outfile = "")
-registerDoParallel(cl)
-
-# Inputs
+# Inputs — ensure types are correct
 clam_Frame <- clam_Frame %>% mutate(across(c(`14C_age`, cal_age, error, reservoir, depth, thickness), as.numeric))
 CoreLengths <- CoreLengths %>% mutate(corelength = as.integer(corelength))
 seq_id_all <- seq_along(CoreIDs)
 
-# Outer loop over cores (use %do% so LANDO logs are visible)
-clam_core_results <- foreach(core = seq_id_all,
-                             .combine = dplyr::bind_rows, 
-                             .multicombine = TRUE, 
-                             .packages = c("clam", "tidyverse", "data.table")) %do% {
+# Register a single inner cluster for all model tasks
+n_inner_cores <- floor(detectCores(logical = TRUE) * 0.8)
+inner_cl <- makeCluster(n_inner_cores, outfile = "")
+registerDoParallel(inner_cl)
+
+# Outer loop (sequential with visible output)
+clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do% {
 
   suppressPackageStartupMessages({
-      library(clam)
-      library(tidyverse)
-      library(R.devices)
-    })                      
-  
+    library(clam)
+    library(tidyverse)
+    library(data.table)
+    library(R.devices)
+  })
+
   core_id <- CoreIDs[[core]]
   message(sprintf("🌍 Starting core %s (%d of %d)", core_id, core, length(CoreIDs)))
 
@@ -40,6 +38,7 @@ clam_core_results <- foreach(core = seq_id_all,
   core_max <- clength$corelength
   date_max <- floor(max(core_selection$depth, na.rm = TRUE))
 
+  # Select model parameters based on data quality
   types <- types_curve
   poly_degree <- poly_degree_curve
   smoothness <- smoothness_curve
@@ -48,16 +47,15 @@ clam_core_results <- foreach(core = seq_id_all,
   if (n_depths < 6) types <- types[!types %in% c(4, 5)]
   poly_degree <- poly_degree[poly_degree < n_depths]
 
+  # Write input to temp file
   shared_dir <- file.path(tempdir(), paste0("clam_", core_id))
-  dir.create(shared_dir, recursive = TRUE, showWarnings = FALSE)
-  core_dir <- file.path(shared_dir, core_id)
-  dir.create(core_dir, showWarnings = FALSE)
-
-  input_file <- file.path(core_dir, paste0(core_id, ".csv"))
+  dir.create(file.path(shared_dir, core_id), recursive = TRUE, showWarnings = FALSE)
+  input_file <- file.path(shared_dir, core_id, paste0(core_id, ".csv"))
   core_selection %>%
     select(lab_ID, `14C_age`, cal_age, error, reservoir, depth, thickness) %>%
     write.csv(file = input_file, row.names = FALSE, quote = FALSE)
 
+  # Build model task list
   model_tasks <- list()
   for (type in types) {
     if (type %in% c(1, 3)) {
@@ -70,18 +68,15 @@ clam_core_results <- foreach(core = seq_id_all,
     }
   }
 
-  # Inner parallel loop for model types (dopar)
-  inner_cl <- makeCluster(4, outfile = "")
-  registerDoParallel(inner_cl)
+  # Run model tasks in parallel with shared inner cluster
+  model_results <- tryCatch({
+    foreach(task = model_tasks, .combine = dplyr::bind_rows) %dopar% {
+      suppressPackageStartupMessages({
+        library(clam)
+        library(tidyverse)
+        library(R.devices)
+      })
 
-  model_results <- foreach(task = model_tasks, .combine = dplyr::bind_rows, .packages = c("clam", "tidyverse", "R.devices")) %dopar% {
-    suppressPackageStartupMessages({
-      library(clam)
-      library(tidyverse)
-      library(R.devices)
-    })
-
-    
     type <- task$type
     smooth <- task$smooth
     dmax <- task$dmax
@@ -91,15 +86,14 @@ clam_core_results <- foreach(core = seq_id_all,
              else sprintf("clam type %d", type)
 
     invisible(capture.output(
-      suppressMessages(
-        suppressWarnings(
-          R.devices::suppressGraphics({
-            clam(core = core_id, coredir = shared_dir, type = type, smooth = smooth,
-                 its = 20000, dmin = 0, dmax = dmax,
-                 plotpdf = FALSE, plotpng = FALSE, plotname = FALSE)
-          })
-        )
-      ), type = "output"
+      suppressMessages(suppressWarnings(
+        R.devices::suppressGraphics({
+          clam(core = core_id, coredir = shared_dir, type = type, smooth = smooth,
+               its = 20000, dmin = 0, dmax = dmax,
+               plotpdf = FALSE, plotpng = FALSE, plotname = FALSE)
+        })
+      )),
+      type = "output"
     ))
 
     if (!exists("chron", inherits = TRUE)) {
@@ -125,9 +119,10 @@ clam_core_results <- foreach(core = seq_id_all,
     message(sprintf("✅ Finished core %s — %s", core_id, label))
     return(chron_matrix)
   }
-
-  stopCluster(inner_cl)
-  registerDoSEQ()
+}, error = function(e) {
+  message(sprintf("❌ Error in parallel modeling for core %s: %s", core_id, conditionMessage(e)))
+  return(NULL)
+})
 
   message(sprintf("✅ Finished all models for core %s", core_id))
 
@@ -141,7 +136,8 @@ clam_core_results <- foreach(core = seq_id_all,
   return(model_results)
 }
 
-stopCluster(cl)
+# Cleanup
+stopCluster(inner_cl)
 registerDoSEQ()
 gc()
 
