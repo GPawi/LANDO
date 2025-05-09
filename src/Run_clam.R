@@ -1,4 +1,4 @@
-### LANDO Clam runner script — stable double parallelization with clean logging and reduced memory ###
+### LANDO Clam runner script — double parallelization, live output, and stable worker returns ###
 
 suppressPackageStartupMessages({
   library(clam)
@@ -10,12 +10,11 @@ suppressPackageStartupMessages({
   library(R.devices)
 })
 
-# Ensure numeric types
-clam_Frame <- clam_Frame %>% mutate(across(c(`14C_age`, cal_age, error, reservoir, depth, thickness), as.numeric))
+clam_Frame <- clam_Frame %>%
+  mutate(across(c(`14C_age`, cal_age, error, reservoir, depth, thickness), as.numeric))
 CoreLengths <- CoreLengths %>% mutate(corelength = as.integer(corelength))
 seq_id_all <- seq_along(CoreIDs)
 
-# Outer loop (%do% for visibility)
 clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do% {
 
   suppressPackageStartupMessages({
@@ -42,12 +41,7 @@ clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do
   poly_degree <- poly_degree[poly_degree < n_depths]
 
   shared_dir <- file.path(tempdir(), paste0("clam_", core_id))
-  dir.create(file.path(shared_dir, core_id), recursive = TRUE, showWarnings = FALSE)
-
-  write.csv(core_selection %>%
-              select(lab_ID, `14C_age`, cal_age, error, reservoir, depth, thickness),
-            file = file.path(shared_dir, core_id, paste0(core_id, ".csv")),
-            row.names = FALSE, quote = FALSE)
+  dir.create(shared_dir, recursive = TRUE, showWarnings = FALSE)
 
   model_tasks <- list()
   for (type in types) {
@@ -61,64 +55,92 @@ clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do
     }
   }
 
-  # Parallel inner loop
   inner_cl <- makeCluster(floor(detectCores(logical = TRUE) * 0.8), outfile = "")
   registerDoParallel(inner_cl)
 
   model_results <- tryCatch({
-    foreach(task = model_tasks, .combine = dplyr::bind_rows, .errorhandling = "remove") %dopar% {
-      suppressPackageStartupMessages({
-        library(clam)
-        library(tidyverse)
-        library(R.devices)
+    foreach(task = model_tasks, .combine = dplyr::bind_rows, .errorhandling = "pass") %dopar% {
+
+      tryCatch({
+        suppressPackageStartupMessages({
+          library(clam)
+          library(tidyverse)
+          library(R.devices)
+        })
+
+        type <- task$type
+        smooth <- task$smooth
+        dmax <- task$dmax
+
+        label <- if (type == 2) sprintf("clam type %d degree %d", type, smooth)
+                 else if (type %in% c(4, 5)) sprintf("clam type %d smoothing %.1f", type, smooth)
+                 else sprintf("clam type %d", type)
+
+        model_dir <- file.path(shared_dir, gsub("[^a-zA-Z0-9_]", "_", label))
+        core_subdir <- file.path(model_dir, core_id)
+        dir.create(core_subdir, recursive = TRUE, showWarnings = FALSE)
+
+        write.csv(core_selection %>%
+                    select(lab_ID, `14C_age`, cal_age, error, reservoir, depth, thickness),
+                  file = file.path(core_subdir, paste0(core_id, ".csv")),
+                  row.names = FALSE, quote = FALSE)
+
+        clam_output <- tryCatch({
+          out <- capture.output({
+            suppressWarnings({
+              result <- clam(core = core_id, coredir = model_dir, type = type, smooth = smooth,
+                            its = 20000, dmin = 0, dmax = dmax,
+                            plotpdf = FALSE, plotpng = FALSE, plotname = FALSE)
+              message("✅ Clam call returned successfully.")
+              #invisible(NULL)  # ← prevents `NULL` from being printed
+            })
+          }, type = "message")
+          # Filter messages before writing
+          cleaned_out <- stringr::str_subset(out, "^((?!extrapolating beyond dated levels, dangerous!|^NULL$).)*$")
+          writeLines(cleaned_out, file.path(model_dir, "clam_output.txt"))
+          out
+        }, error = function(e) {
+          msg <- paste("❌ Clam run failed:", conditionMessage(e))
+          message(msg)
+          writeLines(msg, file.path(model_dir, "clam_error.txt"))
+          return(character(0))
+        })
+
+        fit_line <- stringr::str_subset(clam_output, "Fit \\(-log, lower is better\\):")
+        fit_val <- if (length(fit_line) > 0) {
+          stringr::str_extract(fit_line[1], "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?") %>% as.numeric()
+        } else {
+          NA_real_
+        }
+
+        cm_range <- 0:floor(dmax)
+
+        chron_matrix <- tryCatch({
+          df <- as.data.frame(chron[, seq_len(min(10000, ncol(chron)))])
+          rownames(df) <- sprintf("%s %d-%s", core_id, cm_range, gsub("clam ", "clam_", label))
+          df$fit <- fit_val
+          df
+        }, error = function(e) {
+          message(sprintf("⚠️ Invalid chron output for %s — %s", core_id, label))
+          return(NULL)
+        })
+
+        if (exists("chron", envir = .GlobalEnv)) rm("chron", envir = .GlobalEnv)
+
+        message(sprintf("📏 Fit for %s — %s: %s", core_id, label, format(fit_val, digits = 5)))
+        message(sprintf("✅ Finished core %s — %s", core_id, label))
+        gc()
+
+        if (is.null(chron_matrix)) {
+          return(NULL)
+        } else {
+          return(chron_matrix)
+        }
+      }, error = function(e) {
+        message(sprintf("❌ Worker error in core %s — %s: %s", core_id, label, conditionMessage(e)))
+        return(NULL)
       })
 
-      type <- task$type
-      smooth <- task$smooth
-      dmax <- task$dmax
-
-      label <- if (type == 2) sprintf("clam type %d degree %d", type, smooth)
-               else if (type %in% c(4, 5)) sprintf("clam type %d smoothing %.1f", type, smooth)
-               else sprintf("clam type %d", type)
-
-      clam_output <- capture.output(suppressMessages(suppressWarnings(
-        R.devices::suppressGraphics({
-          clam(core = core_id, coredir = shared_dir, type = type, smooth = smooth,
-               its = 10000, dmin = 0, dmax = dmax,
-               plotpdf = FALSE, plotpng = FALSE, plotname = FALSE)
-        })
-      )), type = "output")
-
-      # Parse fit value directly from output
-      fit_line <- clam_output[grepl("Fit \\(-log, lower is better\\):", clam_output)]
-      fit_val <- if (length(fit_line) > 0) {
-        as.numeric(sub(".*Fit \\(-log, lower is better\\):\\s*", "", fit_line[1]))
-      } else {
-        NA_real_
-      }
-
-      cm_range <- 0:floor(dmax)
-      chron_matrix <- tryCatch(as.data.frame(chron[, seq_len(min(10000, ncol(chron)))]),
-                               error = function(e) NULL)
-
-      if (is.null(chron_matrix) || nrow(chron_matrix) != length(cm_range)) {
-        message(sprintf("⚠️ Invalid chron output for %s — %s", core_id, label))
-        return(tibble(model_label = label, core_id = core_id, depth_cm = NA_real_, fit = fit_val))
-      }
-
-      message(sprintf("📏 Fit for %s — %s: %s", core_id, label, format(fit_val, digits = 5)))
-
-      chron_matrix <- chron_matrix %>%
-        mutate(model_label = label,
-               core_id = core_id,
-               depth_cm = cm_range,
-               fit = fit_val) %>%
-        relocate(model_label, core_id, depth_cm, fit)
-
-      if (exists("chron", envir = .GlobalEnv)) rm("chron", envir = .GlobalEnv)
-      message(sprintf("✅ Finished core %s — %s", core_id, label))
-      gc()
-      return(chron_matrix)
     }
   }, error = function(e) {
     message(sprintf("❌ Inner loop failed for core %s: %s", core_id, conditionMessage(e)))
@@ -147,5 +169,5 @@ clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do
   return(model_results)
 }
 
-# Return final results
+# Final result
 return(clam_core_results)
