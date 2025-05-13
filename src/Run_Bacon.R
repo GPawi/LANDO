@@ -35,6 +35,51 @@ if (!rbacon.change.thick) {
   thick_val <- 5
 }
 
+# PRE-CALIBRATION STEP (for mixed cc)
+curve_dir <- "/usr/share/LANDO/cal_curves"
+
+message("Pre-calibrating radiocarbon dates (if needed)...")
+calibrated <- rbindlist(lapply(1:nrow(Bacon_Frame), function(i) {
+  row <- Bacon_Frame[i]
+
+  # Skip already calibrated (cc == 0) or modern samples (age < 0)
+  if (row$cc == 0 || row$obs_age < 0) {
+    return(data.table(
+      id = row$id,
+      cal_median = row$obs_age,
+      cal_1sigma = row$obs_err
+    ))
+  }
+
+  # Try calibration
+  cal <- tryCatch({
+    calibrate(
+      ages = row$obs_age,
+      errors = row$obs_err,
+      cc = row$cc,
+      delta.R = row$delta_R,
+      delta.STD = row$delta_STD,
+      cc.dir = curve_dir
+    )
+  }, error = function(e) {
+    message(sprintf("⚠️ Calibration failed for %s: %s", row$id, e$message))
+    return(NULL)
+  })
+
+  if (is.null(cal)) {
+    return(data.table(id = row$id, cal_median = NA_real_, cal_1sigma = NA_real_))
+  }
+
+  median_age <- summary(cal)$median
+  sigma <- (summary(cal)$`2.5%` - summary(cal)$`97.5%`) / (2 * 1.96)
+
+  data.table(id = row$id, cal_median = median_age, cal_1sigma = abs(sigma))
+}))
+
+# Merge into Bacon_Frame
+Bacon_Frame <- merge(Bacon_Frame, calibrated, by = "id", sort = FALSE)
+
+
 ## Interpolation function
 interpolate_bacon_output_ff <- function(info, depth_seq = NULL) {
   # Try to load output from file if missing
@@ -51,6 +96,9 @@ interpolate_bacon_output_ff <- function(info, depth_seq = NULL) {
     }
   }
 
+  out_file <- list.files(file.path(info$coredir, info$core), pattern = "\\.out$", full.names = TRUE)
+  tail(read.table(out_file))
+
   # Check the structure of the posterior
   posterior <- info$output
   if (ncol(posterior) < 3) stop("Bacon output is malformed or incomplete.")
@@ -58,7 +106,7 @@ interpolate_bacon_output_ff <- function(info, depth_seq = NULL) {
   thick <- info$thick
   d.min <- info$d.min
   d.max <- info$d.max
-  core_id <- info$core  # new
+  core_id <- info$core 
 
   if (is.null(depth_seq)) {
     depth_seq <- seq(d.min, d.max, by = 1)
@@ -85,7 +133,7 @@ interpolate_bacon_output_ff <- function(info, depth_seq = NULL) {
 ### New function
 lando_bacon <- function(core_id, depths, ages, errors,
                         cc = 1, delta.R = 0, delta.STD = 0,
-                        thick = 5, d.min = NA, d.max = NA,
+                        thick = thick_val, d.min = NA, d.max = NA,
                         acc.shape = 1.5, acc.mean = 20,
                         mem.strength = 10, mem.mean = 0.5,
                         ssize = 4000, burnin = 1000,
@@ -119,7 +167,7 @@ lando_bacon <- function(core_id, depths, ages, errors,
   info <- rbacon::Bacon(
     core = core_id,
     coredir = coredir,
-    thick = thick,
+    thick = thick_val,
     d.min = d.min,
     d.max = d.max,
     acc.shape = acc.shape,
@@ -137,6 +185,9 @@ lando_bacon <- function(core_id, depths, ages, errors,
     ...
   )
   dev.off()
+
+  out_file <- list.files(file.path(info$coredir, info$core), pattern = "\\.out$", full.names = TRUE)
+  tail(read.table(out_file))
 
   return(info)
 }
@@ -159,11 +210,11 @@ Bacon_parallel <- function(i, Bacon_Frame, CoreIDs) {
       lando_bacon(
         core_id = core_id,
         depths = core_selection$depth,
-        ages = core_selection$obs_age,
-        errors = core_selection$obs_err,
-        cc = core_selection$cc,
-        delta.R = core_selection$delta_R,
-        delta.STD = core_selection$delta_STD,
+        ages = core_selection$cal_median,    # use calibrated age
+        errors = core_selection$cal_1sigma,  # use calibrated error
+        cc = 0,                              # explicitly disable calibration
+        delta.R = 0,                         # ignored when cc = 0
+        delta.STD = 0,
         d.max = clength$corelength,
         acc.shape = acc.shape,
         acc.mean = acc.mean,
@@ -172,7 +223,7 @@ Bacon_parallel <- function(i, Bacon_Frame, CoreIDs) {
         ssize = current_ssize,
         thick = thick_val,
         suggest = rbacon.change.acc.mean,
-        accept.suggestions = rbacon.change.acc.mean,
+        accept.suggestions = rbacon.change.acc.mean
       )
     }, error = function(e) {
       message(sprintf("❌ Bacon error on attempt %d: %s", retry + 1, e$message))

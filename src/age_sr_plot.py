@@ -255,8 +255,8 @@ class PlotAgeSR(object):
             self.age_SR_core_dict.setdefault(core,[]).append(combine_SR_df)
         
         #### All results from the dictionary are now added to the two main return dataframes
-        self.combine_age_df = pd.DataFrame(columns = combine_age_df.columns)
-        self.combine_SR_df = pd.DataFrame(columns = combine_SR_df.columns)
+        self.combine_age_df = combine_age_df.iloc[0:0].copy()
+        self.combine_SR_df = combine_SR_df.iloc[0:0].copy()
         for key in self.age_SR_core_dict.keys():
             self.combine_age_df = pd.concat([self.combine_age_df, self.age_SR_core_dict[key][0]], ignore_index=True)
             self.combine_SR_df = pd.concat([self.combine_SR_df, self.age_SR_core_dict[key][1]], ignore_index=True)
@@ -513,7 +513,7 @@ class PlotAgeSR(object):
             else:
                 if self.for_color_blind == True: #### This changes the plot to be suitable for people with color vision deficiency
                     for data in self.age_data:
-                        line, = ax1.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax1, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], linewidth = 2, marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
+                        line, = ax1.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], linewidth = 2, marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
                         if self.sigma_range == 'both':
                             ax1.fill_betweenx(data['compositedepth'], data['upper_1_sigma'], data['lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
                             ax1.fill_betweenx(data['compositedepth'], data['upper_2_sigma'], data['lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
@@ -525,7 +525,7 @@ class PlotAgeSR(object):
                             pass
                 else:
                     for data in self.age_data:
-                        ax1.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax1, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
+                        ax1.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0].split(' ')[0]])
                         if self.sigma_range == 'both':
                             ax1.fill_betweenx(data['compositedepth'], data['upper_1_sigma'], data['lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
                             ax1.fill_betweenx(data['compositedepth'], data['upper_2_sigma'], data['lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
@@ -575,7 +575,7 @@ class PlotAgeSR(object):
             else:
                 if self.for_color_blind == True: #### This changes the plot to be suitable for people with color vision deficiency
                     for data in self.SR_data:
-                        ax2.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax2, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
+                        ax2.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
                         if self.sigma_range == 'both':
                             ax2.fill_betweenx(data['compositedepth'], data['SR_upper_1_sigma'], data['SR_lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
                             ax2.fill_betweenx(data['compositedepth'], data['SR_upper_2_sigma'], data['SR_lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
@@ -587,7 +587,7 @@ class PlotAgeSR(object):
                             pass
                 else:
                     for data in self.SR_data:
-                        ax2.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax2, color = model_color[data['model_name'].unique()[0]])
+                        ax2.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0]])
                         if self.sigma_range == 'both':
                             ax2.fill_betweenx(data['compositedepth'], data['SR_upper_1_sigma'], data['SR_lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0]])
                             ax2.fill_betweenx(data['compositedepth'], data['SR_upper_2_sigma'], data['SR_lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0]])
