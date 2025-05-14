@@ -7,9 +7,6 @@ WORKDIR /home/jovyan/work
 # Copy your code into the container
 COPY . /home/jovyan/work
 
-# Add calibration curves for rintcal
-COPY cal_curves /usr/share/LANDO/cal_curves
-
 # Install SoS, Octave kernel, and JupyterLab UI
 RUN pip install \
     sos \
