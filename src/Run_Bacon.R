@@ -36,72 +36,52 @@ thick_val <- if (!rbacon.change.thick && mem_mb > 16000) 1 else 5
 
 # Interpolation function
 interpolate_bacon_output_ff <- function(info, depth_seq = NULL) {
-  # Load Bacon output if not already loaded
+  if (is.null(depth_seq)) {
+    depth_seq <- seq(info$d.min, info$d.max, by = 1)
+  }
+
+  # Load Bacon output into info$output if not already present
   if (is.null(info$output)) {
     out_file <- list.files(file.path(info$coredir, info$core), pattern = "\\.out$", full.names = TRUE)
     if (length(out_file) == 1) {
-      posterior <- tryCatch({
+      info$output <- tryCatch({
         as.matrix(read.table(out_file, header = FALSE))
-      }, error = function(e) NULL)
-      if (is.null(posterior)) stop("❌ Could not read Bacon output from .out file.")
-      info$output <- posterior
+      }, error = function(e) stop("❌ Could not read Bacon .out file: ", e$message))
     } else {
-      stop("❌ No Bacon output available in memory or file.")
+      stop("❌ No .out file found in: ", file.path(info$coredir, info$core))
     }
   }
 
-  out_file <- list.files(file.path(info$coredir, info$core), pattern = "\\.out$", full.names = TRUE)
-  posterior <- tryCatch({
-    as.matrix(read.table(out_file, header = FALSE))
-  }, error = function(e) stop("❌ Could not read Bacon output from .out file."))
+  # Safety check
+  if (is.null(info$output)) stop("❌ Bacon model 'info$output' is missing (no .out file loaded).")
 
-  thick <- info$thick
-  d.min <- info$d.min
-  d.max <- info$d.max
-  core_id <- info$core
+  n_iter <- nrow(info$output)
+  n_depths <- length(depth_seq)
 
-  if (is.null(depth_seq)) {
-    depth_seq <- seq(d.min, d.max, by = 1)
+  # Loop through all depths and extract MCMC age estimates
+  message(sprintf("⏳ Extracting ages at %d depths × %d iterations", n_depths, n_iter))
+  age_matrix <- matrix(NA_real_, nrow = n_depths, ncol = n_iter)
+  for (i in seq_len(n_depths)) {
+    d <- depth_seq[i]
+    age_matrix[i, ] <- tryCatch({
+      Bacon.Age.d(
+        d = d,
+        set = info,
+        its = info$output,
+        BCAD = info$BCAD,
+        na.rm = FALSE
+      )
+    }, error = function(e) {
+      warning(sprintf("⚠️ Bacon.Age.d() failed at depth %.2f: %s", d, e$message))
+      rep(NA_real_, n_iter)
+    })
   }
 
-  # Drop last two columns (metadata)
-  raw <- posterior[, 1:(ncol(posterior) - 2)]
-  ages_matrix <- t(raw)  # Transpose: now rows = depths, cols = iterations
-
-  message(sprintf("✅ ages_matrix shape: %d depths × %d iterations", nrow(ages_matrix), ncol(ages_matrix)))
-
-  # Load correct elbow depths from the .bacon file
-  n_depths <- nrow(ages_matrix)
-  elbows <- d.min + (seq_len(n_depths) - 1) * thick
-
-  # Check alignment with raw posterior
-  if (length(elbows) != nrow(ages_matrix)) {
-    stop(sprintf("❌ Mismatch: %d elbow depths vs %d rows in posterior", length(elbows), nrow(ages_matrix)))
-  }
-
-  interpolated <- lapply(seq_len(ncol(ages_matrix)), function(i) {
-    stats::approx(x = elbows, y = ages_matrix[, i], xout = depth_seq, rule = 2)$y
-  })
-
-  interpolated_mat <- do.call(cbind, interpolated)
-  colnames(interpolated_mat) <- paste0("iter_", seq_len(ncol(interpolated_mat)))
-
-  # Sanity check
-  max_depth <- max(depth_seq)
-  deepest_layer <- interpolated_mat[nrow(interpolated_mat), ]
-  message("🔎 Interpolation check:")
-  message(sprintf("Depth range: %.2f–%.2f cm", min(depth_seq), max_depth))
-  message(sprintf("Deepest modeled age: min=%.1f, mean=%.1f, max=%.1f",
-                  min(deepest_layer, na.rm = TRUE),
-                  mean(deepest_layer, na.rm = TRUE),
-                  max(deepest_layer, na.rm = TRUE)))
-  if (max(deepest_layer, na.rm = TRUE) < 10000) {
-    warning("⚠️ Deepest modeled age is <10,000 cal BP — check input ages or d.max")
-  }
+  colnames(age_matrix) <- paste0("iter_", seq_len(ncol(age_matrix)))
 
   # Return as ffdf
-  core_depth_labels <- paste(core_id, depth_seq)
-  ff_interpolated <- ff::as.ffdf(data.frame(depth = factor(core_depth_labels), interpolated_mat))
+  core_depth_labels <- paste(info$core, depth_seq)
+  ff_interpolated <- ff::as.ffdf(data.frame(depth = factor(core_depth_labels), age_matrix))
 
   return(ff_interpolated)
 }
@@ -195,7 +175,6 @@ Bacon_parallel <- function(i, Bacon_Frame, CoreIDs) {
     })
 
     if (is.null(run)) {
-      message("I am culprit No.1")
       retry <- retry + 1
       current_ssize <- ceiling(current_ssize * 1.5)
       next
@@ -211,18 +190,15 @@ Bacon_parallel <- function(i, Bacon_Frame, CoreIDs) {
     )
 
     if (is.null(age.mods.interp)) {
-      message("I am culprit No. 2")
       retry <- retry + 1
       current_ssize <- ceiling(current_ssize * 1.5)
       next
     }
 
     iter_cols <- grep("^iter_", names(age.mods.interp), value = TRUE)
-    message(sprintf("✅ %d iterations achieved", length(iter_cols)))
     if (length(iter_cols) >= 10000) {
       success <- TRUE
     } else {
-      message("I am culprit No. 3")
       retry <- retry + 1
       current_ssize <- ceiling(current_ssize + (10000 - length(iter_cols)) * 2.5)
     }
