@@ -1,4 +1,4 @@
-### LANDO Clam runner script — double parallelization, live output, and stable worker returns ###
+### LANDO Clam runner script — double parallelization, live output, pre-calibrated dates (cc=0) ###
 
 suppressPackageStartupMessages({
   library(clam)
@@ -10,8 +10,13 @@ suppressPackageStartupMessages({
   library(R.devices)
 })
 
+# Ensure clam_Frame and calib_dates are data.tables
+clam_Frame <- as.data.table(clam_Frame)
+
+# Convert all fields to numeric as needed
 clam_Frame <- clam_Frame %>%
   mutate(across(c(`14C_age`, cal_age, error, reservoir, depth, thickness), as.numeric))
+
 CoreLengths <- CoreLengths %>% mutate(corelength = as.integer(corelength))
 seq_id_all <- seq_along(CoreIDs)
 
@@ -55,11 +60,14 @@ clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do
     }
   }
 
-  inner_cl <- makeCluster(floor(detectCores(logical = TRUE) * 0.8), outfile = "")
+  n_workers <- floor(detectCores(logical = TRUE) * 0.8)
+  inner_cl <- makeCluster(n_workers, outfile = "")
   registerDoParallel(inner_cl)
 
   model_results <- tryCatch({
-    foreach(task = model_tasks, .combine = dplyr::bind_rows, .errorhandling = "pass") %dopar% {
+  foreach(task = model_tasks, 
+          .combine = dplyr::bind_rows, 
+          .errorhandling = "pass") %dopar% {
 
       tryCatch({
         suppressPackageStartupMessages({
@@ -80,30 +88,51 @@ clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do
         core_subdir <- file.path(model_dir, core_id)
         dir.create(core_subdir, recursive = TRUE, showWarnings = FALSE)
 
-        write.csv(core_selection %>%
-                    select(lab_ID, `14C_age`, cal_age, error, reservoir, depth, thickness),
+        write.csv(core_selection,
                   file = file.path(core_subdir, paste0(core_id, ".csv")),
                   row.names = FALSE, quote = FALSE)
 
-        clam_output <- tryCatch({
-          out <- capture.output({
-            suppressWarnings({
-              result <- clam(core = core_id, coredir = model_dir, type = type, smooth = smooth,
-                            its = 20000, dmin = 0, dmax = dmax,
-                            plotpdf = FALSE, plotpng = FALSE, plotname = FALSE)
-              message("✅ Clam call returned successfully.")
-              #invisible(NULL)  # ← prevents `NULL` from being printed
-            })
-          }, type = "message")
-          # Filter messages before writing
-          cleaned_out <- stringr::str_subset(out, "^((?!extrapolating beyond dated levels, dangerous!|^NULL$).)*$")
-          writeLines(cleaned_out, file.path(model_dir, "clam_output.txt"))
-          out
-        }, error = function(e) {
-          msg <- paste("❌ Clam run failed:", conditionMessage(e))
-          message(msg)
-          writeLines(msg, file.path(model_dir, "clam_error.txt"))
-          return(character(0))
+        suppressGraphics({
+          pdf(NULL)
+          clam_output <- tryCatch({
+
+            # Suppress cat/print output (stdout)
+            invisible(capture.output({
+
+              # Suppress message() output and capture it
+              out <- capture.output({
+                suppressWarnings({
+                  result <- clam(
+                    core = core_id,
+                    coredir = model_dir,
+                    type = type,
+                    smooth = smooth,
+                    its = 20000,
+                    dmin = 0,
+                    dmax = dmax,
+                    plotpdf = FALSE,
+                    plotpng = FALSE,
+                    plotname = FALSE
+                  )
+                  message("✅ Clam call returned successfully.")
+                })
+              }, type = "message")
+
+              # Write filtered messages
+              cleaned_out <- stringr::str_subset(out, "^((?!extrapolating beyond dated levels, dangerous!|^NULL$).)*$")
+              writeLines(cleaned_out, file.path(model_dir, "clam_output.txt"))
+
+            }))  # <-- end of capture.output for cat()
+
+            out  # Return message log
+
+          }, error = function(e) {
+            msg <- paste("❌ Clam run failed:", conditionMessage(e))
+            message(msg)
+            writeLines(msg, file.path(model_dir, "clam_error.txt"))
+            return(character(0))
+          })
+          dev.off()
         })
 
         fit_line <- stringr::str_subset(clam_output, "Fit \\(-log, lower is better\\):")
@@ -111,6 +140,20 @@ clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do
           stringr::str_extract(fit_line[1], "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?") %>% as.numeric()
         } else {
           NA_real_
+        }
+
+        reversal_warning <- any(stringr::str_detect(clam_output, "Age reversals occurred"))
+
+        # Handle exclusion conditions
+        if (is.na(fit_val) || !is.finite(fit_val)) {
+          message(sprintf("⚠️ Excluding %s for %s due to NA or infinite fit value", label, core_id))
+          gc()
+          return(NULL)
+        }
+        if (reversal_warning) {
+          message(sprintf("⚠️ Excluding %s for %s due to age reversal warning", label, core_id))
+          gc()
+          return(NULL)
         }
 
         cm_range <- 0:floor(dmax)
@@ -157,7 +200,11 @@ clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do
 
     if (nrow(valid_models) > 0) {
       best <- valid_models %>% slice_min(fit, n = 1)
-      message(sprintf("🏆 Selected best-fit model for core %s — %s", core_id, best$model_label[1]))
+
+      # Extract model label from row name
+      label_out <- stringr::str_extract(rownames(best)[1], "clam_.*$")
+
+      message(sprintf("🏆 Selected best-fit model for core %s — %s", core_id, label_out))
       model_results <- best
     } else {
       message(sprintf("⚠️ No valid models found for core %s — all fits were NA or infinite", core_id))
