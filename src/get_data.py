@@ -1200,6 +1200,8 @@ class ProxyFromFile(object):
             self.fc.use_dir_icons = True
             self.fc.filter_pattern = ['*.xlsx']
             display(self.fc)
+            print("Pleae select your file and then continue with the execution of the next cell.")
+
      
     def __proxy_data_multi_cores(self):
         """

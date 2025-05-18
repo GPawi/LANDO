@@ -969,7 +969,7 @@ class PlotAgeSR(object):
             self.c_fitting_values = self.fitting_values[self.coreid[0]]
             self.c_optimization_values = self.optimization_values[self.coreid[0]]
             if self.show_fitting_models == True: #### This if statement ensures that no data will be deleted if only excluded models are shown
-                self.excluded_models = [self.c_fitting_values.index[i] for i in range(len(self.c_fitting_values)) if self.c_fitting_values[i] <= self.inclusion_threshold]
+                self.excluded_models = [self.c_fitting_values.index[i] for i in range(len(self.c_fitting_values)) if self.c_fitting_values.iloc[i] <= self.inclusion_threshold]
                 for i in self.excluded_models:
                     self.model_plot_data.pop(i)
             self.__frame_prep()
@@ -997,7 +997,7 @@ class PlotAgeSR(object):
             else:
                 if self.for_color_blind == True:
                     for data in self.age_data:
-                        line, = ax2.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax2, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], linewidth = 2, marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
+                        line, = ax2.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], linewidth = 2, marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
                         if self.sigma_range == 'both':
                             ax2.fill_betweenx(data['compositedepth'], data['upper_1_sigma'], data['lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
                             ax2.fill_betweenx(data['compositedepth'], data['upper_2_sigma'], data['lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
@@ -1009,7 +1009,7 @@ class PlotAgeSR(object):
                             pass
                 else:
                     for data in self.age_data:
-                        ax2.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax2, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
+                        ax2.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0].split(' ')[0]])
                         if self.sigma_range == 'both':
                             ax2.fill_betweenx(data['compositedepth'], data['upper_1_sigma'], data['lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
                             ax2.fill_betweenx(data['compositedepth'], data['upper_2_sigma'], data['lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
@@ -1070,7 +1070,7 @@ class PlotAgeSR(object):
             else:
                 if self.for_color_blind == True:
                     for data in self.SR_data:
-                        ax3.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax3, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
+                        ax3.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
                         if self.sigma_range == 'both':
                             ax3.fill_betweenx(data['compositedepth'], data['SR_upper_1_sigma'], data['SR_lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
                             ax3.fill_betweenx(data['compositedepth'], data['SR_upper_2_sigma'], data['SR_lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
@@ -1082,7 +1082,7 @@ class PlotAgeSR(object):
                             pass
                 else:
                     for data in self.SR_data:
-                        ax3.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax3, color = model_color[data['model_name'].unique()[0]])
+                        ax3.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0]])
                         if self.sigma_range == 'both':
                             ax3.fill_betweenx(data['compositedepth'], data['SR_upper_1_sigma'], data['SR_lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0]])
                             ax3.fill_betweenx(data['compositedepth'], data['SR_upper_2_sigma'], data['SR_lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0]])
@@ -1127,7 +1127,7 @@ class PlotAgeSR(object):
                 self.c_fitting_values = self.c_fitting_values[~self.c_fitting_values.index.isin(self.excluded_models)]
             info_string = ""
             for i in range(len(self.c_fitting_values)):
-                info_string += f"{self.c_fitting_values.index[i]}: {round(self.c_fitting_values[i], 4)}"
+                info_string += f"{self.c_fitting_values.index[i]}: {round(self.c_fitting_values.iloc[i], 4)}"
                 if i != len(self.c_fitting_values)-1:
                     info_string += ", "
             ax2.text(x = ((ax2_min + ax2_max)/2), y = (ax2.get_ylim()[0] * 1.05), s = info_string, ha = 'center')
