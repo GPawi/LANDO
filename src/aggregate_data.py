@@ -364,6 +364,7 @@ class AggDataClam(object):
             self.age_model_result_clam = []
             print ('No age data available!')
         else:
+            clam_core_results.set_index('model_label', inplace = True)
             self.age_model_result_clam = clam_core_results.apply(self.__confidence_intervals, axis = 1, result_type='expand')
             self.age_model_result_clam.columns = ['modeloutput_median',
                                                'modeloutput_mean',
@@ -373,8 +374,9 @@ class AggDataClam(object):
                                                'upper_2_sigma']
             self.age_model_result_clam = self.age_model_result_clam.astype(int)
             self.age_model_result_clam = self.age_model_result_clam.reset_index()
-            self.age_model_result_clam = self.age_model_result_clam.rename(columns={"index": "measurementid"})
+            self.age_model_result_clam = self.age_model_result_clam.rename(columns={"model_label": "measurementid"})
             #### This transforms the clam-specific MeasurementID into it's components
+            self.age_model_result_clam['measurementid'] = self.age_model_result_clam['measurementid'].astype(str)
             self.age_model_result_clam[['coreid','depth_model_type']] = self.age_model_result_clam['measurementid'].str.split(' ', n = 1, expand = True)
             self.age_model_result_clam[['depth','model_name']] = self.age_model_result_clam['depth_model_type'].str.split('-', n = 1, expand = True)
             self.age_model_result_clam['model_name'] = self.age_model_result_clam['model_name'].str.replace('_',' ')

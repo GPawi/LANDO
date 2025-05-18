@@ -147,11 +147,13 @@ clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do
         # Handle exclusion conditions
         if (is.na(fit_val) || !is.finite(fit_val)) {
           message(sprintf("⚠️ Excluding %s for %s due to NA or infinite fit value", label, core_id))
+          if (exists("chron", envir = .GlobalEnv)) rm("chron", envir = .GlobalEnv)
           gc()
           return(NULL)
         }
         if (reversal_warning) {
           message(sprintf("⚠️ Excluding %s for %s due to age reversal warning", label, core_id))
+          if (exists("chron", envir = .GlobalEnv)) rm("chron", envir = .GlobalEnv)
           gc()
           return(NULL)
         }
@@ -162,6 +164,7 @@ clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do
           df <- as.data.frame(chron[, seq_len(min(10000, ncol(chron)))])
           rownames(df) <- sprintf("%s %d-%s", core_id, cm_range, gsub("clam ", "clam_", label))
           df$fit <- fit_val
+          df$model_label <- sprintf("%s %d-%s", core_id, cm_range, gsub("clam ", "clam_", label))
           df
         }, error = function(e) {
           message(sprintf("⚠️ Invalid chron output for %s — %s", core_id, label))
@@ -194,22 +197,37 @@ clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do
   registerDoSEQ()
 
   if (exists("best_fit") && isTRUE(best_fit) &&
-      !is.null(model_results) && "fit" %in% colnames(model_results)) {
+    !is.null(model_results) && "fit" %in% colnames(model_results)) {
 
-    valid_models <- model_results %>% filter(!is.na(fit), is.finite(fit))
+  valid_models <- model_results %>% filter(!is.na(fit), is.finite(fit))
 
-    if (nrow(valid_models) > 0) {
-      best <- valid_models %>% slice_min(fit, n = 1)
-
-      # Extract model label from row name
-      label_out <- stringr::str_extract(rownames(best)[1], "clam_.*$")
-
-      message(sprintf("🏆 Selected best-fit model for core %s — %s", core_id, label_out))
-      model_results <- best
-    } else {
+  if (nrow(valid_models) == 0) {
       message(sprintf("⚠️ No valid models found for core %s — all fits were NA or infinite", core_id))
-      model_results <- tibble()
+      model_results <- NULL
+
+    } else {
+      # Find minimum fit
+      min_fit <- min(valid_models$fit, na.rm = TRUE)
+
+      # Filter rows with the best fit
+      best_models <- valid_models %>% filter(fit == min_fit)
+
+      # Extract model labels from rownames
+      model_labels <- stringr::str_extract(rownames(best_models), "clam_.*$")
+      unique_labels <- unique(model_labels)
+
+      if (length(unique_labels) == 1) {
+        message(sprintf("🏆 Selected best-fit model for core %s — %s", core_id, unique_labels))
+        model_results <- best_models
+      } else {
+        message(sprintf("ℹ️ Multiple best-fit models found for core %s (fit = %g), keeping all.", 
+                        core_id, min_fit))
+        model_results <- best_models
+      }
     }
+
+  } else if (is.null(model_results) || nrow(model_results) == 0) {
+    model_results <- NULL
   }
 
   unlink(shared_dir, recursive = TRUE, force = TRUE)
@@ -217,4 +235,9 @@ clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do
 }
 
 # Final result
+if (!is.null(clam_core_results) && "model_label" %in% colnames(clam_core_results)) {
+  clam_core_results <- clam_core_results %>%
+    relocate(model_label, .before = everything())
+}
+clam_core_results$fit <- NULL  
 return(clam_core_results)
