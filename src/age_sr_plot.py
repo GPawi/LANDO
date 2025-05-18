@@ -350,7 +350,12 @@ class PlotAgeSR(object):
                         new_frame['coreid'] = core
                         new_frame['model_name'] = model_name
                         new_frame.replace(0, np.nan, inplace = True)
-                        self.model_frame = pd.concat([self.model_frame, new_frame], axis = 0)
+                        candidates = [
+                            df for df in [self.model_frame, new_frame]
+                            if not df.empty and df.dropna(axis=1, how='all').shape[1] > 0
+                        ]
+                        if candidates:
+                            self.model_frame = pd.concat(candidates, axis=0)
                     else:
                         pass
                 self.list_binned_SR_median_age.append(self.model_frame)
@@ -399,7 +404,13 @@ class PlotAgeSR(object):
                         new_frame.reset_index(drop=False, inplace = True)
                         new_frame['coreid'] = core
                         new_frame = new_frame.rename(columns={"SR_median":"Weighted_SR_median"})
-                        self.df_binned_combine_SR_median_age = pd.concat([self.df_binned_combine_SR_median_age, new_frame], axis = 0)
+                        frames_to_concat = [self.df_binned_combine_SR_median_age, new_frame]
+                        frames_to_concat = [
+                            f for f in frames_to_concat
+                            if not f.empty and f.dropna(axis=1, how='all').shape[1] > 0
+                        ]
+                        if frames_to_concat:
+                            self.df_binned_combine_SR_median_age = pd.concat(frames_to_concat, axis=0)
                 
                 self.df_binned_combine_SR_median_age = self.df_binned_combine_SR_median_age.sort_values(by = ['coreid','Binned_mid_age'], ignore_index = True)
            

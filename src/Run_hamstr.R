@@ -57,8 +57,8 @@ run_hamstr_for_core <- function(core_id, hamstr_Frame, CoreLengths,
     mutate(depth = paste(core_id, depth, sep = " ")) |>
     pivot_wider(names_from = iter, values_from = age)
 
-  pred <- pred[, 1:min(ncol(pred), 10001)]  # Keep only first 10001 columns
-  message(sprintf("Done with core: %s", core_id))
+  pred <- pred[, 1:min(ncol(pred), 10001)]  # Limit columns
+  message(sprintf("✅ Done with core: %s", core_id))
   return(pred)
 }
 
@@ -74,9 +74,14 @@ if (length(CoreIDs) == 1) {
   cl <- makeCluster(n_cores, outfile = "", autoStop = TRUE)
   registerDoSNOW(cl)
 
-  clusterExport(cl, c("hamstr_Frame", "CoreLengths", "CoreIDs", "run_hamstr_for_core"))
+  # Wrapped safe runner with libraries loaded inside
+  run_safe_hamstr <- function(i) {
+    suppressPackageStartupMessages({
+      library(hamstr)
+      library(Bchron)
+      library(tidyverse)
+    })
 
-  hamstr_core_results <- foreach(i = seq_along(CoreIDs), .combine = bind_rows, .options.RNG = 20201224) %dorng% {
     core_id <- CoreIDs[[i]]
     tryCatch(
       run_hamstr_for_core(core_id, hamstr_Frame, CoreLengths),
@@ -85,6 +90,12 @@ if (length(CoreIDs) == 1) {
         NULL
       }
     )
+  }
+
+  hamstr_core_results <- foreach(i = seq_along(CoreIDs),
+                                 .combine = bind_rows,
+                                 .options.RNG = 20201224) %dorng% {
+    run_safe_hamstr(i)
   }
 
   stopCluster(cl)

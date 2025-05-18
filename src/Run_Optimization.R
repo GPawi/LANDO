@@ -704,9 +704,7 @@ if (length(CoreIDs) == 1) {
                                                                   library('sets'),
                                                                   library('FuzzyNumbers'),
                                                                   library('Metrics'),
-                                                                  library('knitr'),
-                                                                  library('maptools'),
-                                                                  library('raster')))
+                                                                  library('knitr')))
                                  tryCatch(
                                    optimization_parallel(i, dict_SR_median_age, dict_model_name, proxy_ts)
                                    ,error = function(e){

@@ -857,6 +857,7 @@ class AgeFromFileMultiCores(object):
             self.all_coreid_list = self.__input_age_multi_cores['coreid'].unique().tolist()
             #### For detection limit
             self.__input_age_multi_cores.reset_index(drop = True, inplace = True)
+            self.__input_age_multi_cores['age'] = self.__input_age_multi_cores['age'].astype(object)
             for i in range(0, len(self.__input_age_multi_cores)):
                 if type(self.__input_age_multi_cores.iloc[i,8]) is str and '>' in self.__input_age_multi_cores.iloc[i,8]:
                     __age_array= self.__input_age_multi_cores.iloc[i,8].split('>')
