@@ -120,3 +120,8 @@ RUN echo "addpath('/src/UndatableFolder')" >> /home/jovyan/.octaverc && \
 
 # Back to notebook user
 USER $NB_UID
+
+# Copy and set entrypoint
+COPY setup/lando-entrypoint.sh /usr/local/bin/lando-entrypoint.sh
+RUN chmod +x /usr/local/bin/lando-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/lando-entrypoint.sh"]

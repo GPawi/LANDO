@@ -15,6 +15,7 @@
 - [_clam_](https://github.com/Maarten14C/clam) (Blaauw, 2010)  
 - [_hamstr_](https://github.com/EarthSystemDiagnostics/hamstr) (Dolman, 2021)  
 - [_Undatable_](https://github.com/bryanlougheed/undatable) (Lougheed and Obrochta, 2019)  
+ 
 
 It also supports fuzzy changepoint detection via [Holloway et al. (2021)](https://doi.org/10.1016/j.envsoft.2021.104993) to test model agreement with lithological changes.
 
@@ -26,40 +27,97 @@ You can run **LANDO** with no setup beyond Docker itself.
 
 ### ⚙️ Prerequisites
 
-- Install [Docker Desktop](https://www.docker.com)
-- Allocate **at least 12 GB RAM** in Docker Desktop under:  
-  `Settings > Resources > Memory`
+Before you can use LANDO, you'll need to install Docker and adjust its memory settings:
+
+1. **Install Docker Desktop**  
+   👉 [Download for Windows/macOS](https://www.docker.com/products/docker-desktop)  
+   Follow the installation instructions for your operating system.
+
+2. **Increase Docker Memory (Important!)**  
+   LANDO requires at least **12 GB of RAM** to run the included examples smoothly.  
+   - Open Docker Desktop  
+   - Go to: ⚙️ Settings > Resources > Memory  
+   - Drag the memory slider to **at least 12 GB**  
+   - Click "Apply & Restart"
+
+Once that’s done, you’re ready to launch LANDO!
+
 
 ---
 
-### 🧪 Option 1: One-Line Launch (recommended)
+### 🧪 Option 1: Run LANDO from a Local GitHub Clone (recommended)
 
-Use the included startup script to launch the LANDO environment in one step:
+If you cloned this GitHub repository, you can launch LANDO with one command using the built-in launcher script:
 
 ```bash
 ./LANDO
 ```
 
-> This script launches Jupyter, waits for it to start, and opens your browser.
+This starts Docker using Docker Compose, waits for JupyterLab to initialize, and opens it in your browser.
+
+#### 🖥️ How to do it:
+
+1. Open a terminal  
+2. Go into the cloned folder:
+   ```bash
+   cd /path/to/LANDO
+   ```
+
+3. Run:
+   ```bash
+   ./LANDO
+   ```
+
+> 📎 If needed, make it executable: `chmod +x LANDO`  
+> 🔧 You can inspect or modify the script in `launch-lando.sh`
 
 ---
 
-### 🐳 Option 2: Manual Docker Run
+### 🐳 Option 2: Run LANDO via Docker Only (no GitHub repo needed)
 
-You can also start the container manually:
+LANDO now includes an internal startup script, so all you need to do is:
 
 ```bash
-docker pull gregpfalz/lando-age-depth
 docker run -it -p 8888:8888 gregpfalz/lando-age-depth
 ```
 
-Then go to [http://localhost:8888/lab/tree/LANDO.ipynb](http://localhost:8888/lab/tree/LANDO.ipynb) in your browser.
+➡️ This will:
+- Automatically create required folders (like `tmp_host`)
+- Launch JupyterLab without requiring a token
+- Open directly into the main notebook (`LANDO.ipynb`)
+
+Then open your browser to:
+[http://localhost:8888/lab/tree/LANDO.ipynb](http://localhost:8888/lab/tree/LANDO.ipynb)
+
+> 💡 Tip: Add `--rm` to delete the container after stopping:
+```bash
+docker run --rm -it -p 8888:8888 gregpfalz/lando-age-depth
+```
+> 📝 Note: All example files and notebooks are included in the Docker image.  
+> You only need to mount volumes if you want to save your work or use custom input files.
+
+🔧 Advanced: To save work between runs, mount a local folder like so:
+```bash
+docker run -it -p 8888:8888 -v $(pwd)/my_data:/home/jovyan/data gregpfalz/lando-age-depth
+```
 
 ---
 
 ### 📁 Project Directory
 
 If you cloned this repo, the `./LANDO` script is a symlink to `launch-lando.sh`. You can inspect or modify that script for advanced control.
+
+---
+
+### 📤 Uploading Your Own Data (Easiest Method)
+
+Once LANDO is running and you’re inside the JupyterLab interface:
+
+1. Click the **Upload** button at the top-left of the Jupyter file browser
+2. Select a `.csv` or other file from your computer
+3. Your file will appear in the workspace, ready to use in the notebooks
+
+> ⚠️ Note: files uploaded this way are *temporary*. If you stop the container, the files will be deleted. Be sure to download any outputs before exiting.
 
 ---
 
