@@ -1,224 +1,243 @@
 ### Script to run clam in LANDO ###
 ## Load libraries
-suppressPackageStartupMessages(c(library('IntCal')
-                                 ,library('clam')
-                                 ,library('R.devices')
-                                 ,library('tidyverse')
-                                 ,library('foreach')
-                                 ,library('parallel')
-                                 ,library('doParallel')
-                                 ,library('doSNOW')
-                                 ))
+suppressPackageStartupMessages({
+  library(clam)
+  library(tidyverse)
+  library(data.table)
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(R.devices)
+})
 
-## Initialize cluster
-no_cores = detectCores(logical = TRUE)
-cl = makeCluster(no_cores*0.8, outfile = "", autoStop = TRUE)
-registerDoSNOW(cl)
+# Ensure clam_Frame and calib_dates are data.tables
+clam_Frame <- as.data.table(clam_Frame)
 
-## Load data and give it to the cluster
-seq_id_all <- 1:length(CoreIDs)
-clam_Frame <- clam_Frame %>% mutate_at("depth", as.double)
-CoreLengths <- CoreLengths %>% mutate_at("corelength", as.integer)
-clusterExport(cl,list('clam_Frame','CoreLengths'))
+# Convert all fields to numeric as needed
+clam_Frame <- clam_Frame %>%
+  mutate(across(c(`14C_age`, cal_age, error, reservoir, depth, thickness), as.numeric))
 
-## Run function in parallel in cluster
-clam_core_results <- foreach(core = seq_id_all
-                   ,.combine='rbind'
-                   #,.combine=dplyr::bind_rows
-                   ,.multicombine = TRUE
-                   ,.maxcombine = 1000) %do% {
-                     suppressPackageStartupMessages(c(library('tidyverse'), 
-                                                      library('foreach'), 
-                                                      library('parallel'), 
-                                                      library('clam')))
-                     ### Prepare input from each sediment core
-                     core_selection <- clam_Frame %>% filter(str_detect(lab_ID, CoreIDs[[core]]))
-                     clength <- CoreLengths %>% filter(str_detect(coreid, CoreIDs[[core]]))
-                     date_max <- plyr::round_any(max(core_selection$depth), 1, f = floor)
-                     core_max <- clength$corelength
-                     ### Initial attributes
-                     types <- types_curve
-                     smoothness <- smoothness_curve
-                     poly_degree <- poly_degree_curve
-                     search_rev <- "!!! Too many models with age reversals!!!"
-                     search_fit <- "  Fit \\(-log, lower is better\\): "
-                     ####
-                     tmpdir <- tempdir()
-                     dirbase <- basename(tmpdir)
-                     dirnm <- dirname(tmpdir) 
-                     datfl <- tempfile(tmpdir = tmpdir)
-                     fl <- paste0(tmpdir, "//", dirbase, ".csv")
-                     utils::write.csv(core_selection,
-                                      file = fl,
-                                      row.names = FALSE, quote = FALSE)
-                     ## Take limits for each methods into account
-                     if (length(unique(core_selection$depth)) < 4) {
-                       types <- 1:3
-                     }
-                     if (poly_degree[length(poly_degree)] >= length(unique(core_selection$depth))) {
-                       poly_degree <- 1:(length(unique(core_selection$depth))-1)
-                     }
-                     ###############################################################
-                     result_types <- foreach(type = types
-                                             ,.combine='rbind'
-                                             #,.combine=dplyr::bind_rows
-                                             ,.multicombine = TRUE
-                                             ,.maxcombine = 1000) %dopar% {
-                                               suppressPackageStartupMessages(c(library('tidyverse'), 
-                                                                                library('foreach'), 
-                                                                                library('parallel'), 
-                                                                                library('clam')))
-                                               ## Type 1 & Type 3
-                                               if (type == 1 || type == 3){
-                                                 suppressWarnings(R.devices::suppressGraphics({
-                                                   z <- capture.output(clam(core=dirbase, coredir=dirnm, type = type, 
-                                                                            its = 20000, dmin = 0, dmax = core_max, 
-                                                                            plotpdf = FALSE, plotpng = FALSE, plotname = FALSE))
-                                                 }))
-                                                 fit <- subset(z, grepl((gsub("[\\]", "", search_fit)), z, fixed = TRUE) == TRUE)
-                                                 fit <- as.numeric(sub(search_fit, "", as.character(fit)))
-                                                 if (any(grepl(search_rev, z, fixed = TRUE)) == TRUE) {
-                                                   message(sprintf('Information: Too many models with age reversals in %s with type %d - LANDO will not use this model type', CoreIDs[[core]], type))
-                                                   
-                                                 } else if (fit == 'Inf' & best_fit == TRUE) {
-                                                   message(sprintf('Information: clam flagged the model fit for %s with "Inf" for type %d - LANDO will not use this model type', CoreIDs[[core]], type))
-                                                 } else {
-                                                   chron_model <- as.data.frame(chron[, 1:10000]) 
-                                                   mid <- outer(CoreIDs[[core]], seq(0, core_max, by = 1), paste)
-                                                   row.names(chron_model) <- outer(mid, sprintf('-clam_T%d', type), paste0)
-                                                   chron_model$fit <- fit
-                                                   return (chron_model)
-                                                 }
-                                               } 
-                                               ## Type 2 with different degrees of polynomial degree
-                                               else if (type == 2) {
-                                                 result_2nd <- foreach(degree = poly_degree
-                                                                       ,.combine='rbind'
-                                                                       #,.combine=dplyr::bind_rows
-                                                                       ,.multicombine = TRUE
-                                                                       ,.maxcombine = 1000) %dopar% {
-                                                                         suppressPackageStartupMessages(c(library('tidyverse'), 
-                                                                                                          library('foreach'), 
-                                                                                                          library('parallel'), 
-                                                                                                          library('clam')))
-                                                                         for (poly_d in degree){
-                                                                           suppressWarnings(R.devices::suppressGraphics({
-                                                                             z <- capture.output(clam(core=dirbase, coredir=dirnm, type = type, smooth = poly_d, 
-                                                                                                      its = 20000, dmin = 0, dmax = core_max, 
-                                                                                                      plotpdf = FALSE, plotpng = FALSE, plotname = FALSE))
-                                                                           }))
-                                                                           fit <- subset(z, grepl((gsub("[\\]", "", search_fit)), z, fixed = TRUE) == TRUE)
-                                                                           fit <- as.numeric(sub(search_fit, "", as.character(fit)))
-                                                                           if (any(grepl(search_rev, z, fixed = TRUE)) == TRUE) {
-                                                                             message(sprintf('Information: Too many models with age reversals in %s with type %d and degree of %d - LANDO will not use this model type', CoreIDs[[core]], type, poly_d))
-                                                                           } else if (fit == 'Inf' & best_fit == TRUE) {
-                                                                             message(sprintf('Information: clam flagged the model fit for %s with "Inf" for type %d and degree of %d - LANDO will not use this model type', CoreIDs[[core]], type, poly_d))
-                                                                           } else {
-                                                                             chron_model <- as.data.frame(chron[, 1:10000])
-                                                                             mid <- outer(CoreIDs[[core]], seq(0, core_max, by = 1), paste)
-                                                                             row.names(chron_model) <- outer(mid, sprintf('-clam_T%d_D%d', type, poly_d), paste0)
-                                                                             chron_model$fit <- fit
-                                                                             return (chron_model)
-                                                                           }                 
-                                                                         }
-                                                                       }
-                                                 if (best_fit == TRUE){
-                                                   result_2nd <- result_2nd[result_2nd$fit == min(result_2nd$fit),]
-                                                 }
-                                                 return (result_2nd)
-                                               } 
-                                               ## Type 4 with different smoothness
-                                               else if (type == 4) {
-                                                 result_4th <- foreach(s = smoothness
-                                                                       ,.combine='rbind'
-                                                                       #,.combine=dplyr::bind_rows
-                                                                       ,.multicombine = TRUE
-                                                                       ,.maxcombine = 1000) %dopar% {
-                                                                         suppressPackageStartupMessages(c(library('tidyverse'), 
-                                                                                                          library('foreach'), 
-                                                                                                          library('parallel'), 
-                                                                                                          library('clam')))
-                                                                         for (smo1 in s){
-                                                                           suppressWarnings(R.devices::suppressGraphics({ 
-                                                                             z <- capture.output(clam(core=dirbase, coredir=dirnm, type = type, smooth = smo1, 
-                                                                                                      its = 20000, dmin = 0, dmax = core_max, 
-                                                                                                      plotpdf = FALSE, plotpng = FALSE, plotname = FALSE))
-                                                                           }))
-                                                                           fit <- subset(z, grepl((gsub("[\\]", "", search_fit)), z, fixed = TRUE) == TRUE)
-                                                                           fit <- as.numeric(sub(search_fit, "", as.character(fit)))
-                                                                           if (any(grepl(search_rev, z, fixed = TRUE)) == TRUE) {
-                                                                             message(sprintf('Information: Too many models with age reversals in %s with type %d and smooth of %.1f - LANDO will not use this model type', CoreIDs[[core]], type, smo1))
-                                                                           } else if (fit == 'Inf' & best_fit == TRUE) {
-                                                                             message(sprintf('Information: clam flagged the model fit for %s with "Inf" for type %d and smooth of %.1f - LANDO will not use this model type', CoreIDs[[core]], type, smo1))
-                                                                           } else {
-                                                                             chron_model <- as.data.frame(chron[, 1:10000])
-                                                                             mid <- outer(CoreIDs[[core]], seq(0, core_max, by = 1), paste)
-                                                                             row.names(chron_model) <- outer(mid, sprintf('-clam_T%d_S%d', type, as.integer(smo1*10)), paste0)
-                                                                             chron_model$fit <- fit
-                                                                             return (chron_model)
-                                                                           }
-                                                                         }
-                                                                       }
-                                                 if (best_fit == TRUE){
-                                                   result_4th <- result_4th[result_4th$fit == min(result_4th$fit),]
-                                                 }
-                                                 return (result_4th)
-                                               }
-                                               ## Type 5 with different smoothness 
-                                               else {
-                                                 result_5th <- foreach(k = smoothness
-                                                                       ,.combine='rbind'
-                                                                       #,.combine=dplyr::bind_rows
-                                                                       ,.multicombine = TRUE
-                                                                       ,.maxcombine = 1000
-                                                                       ,.errorhandling = 'remove') %dopar% {
-                                                                         suppressPackageStartupMessages(c(library('tidyverse'), 
-                                                                                                          library('foreach'), 
-                                                                                                          library('parallel'), 
-                                                                                                          library('clam')))
-                                                                         for (smo2 in k){
-                                                                           suppressWarnings(R.devices::suppressGraphics({ 
-                                                                             z <- capture.output(clam(core=dirbase, coredir=dirnm, type = type, smooth = smo2, 
-                                                                                                      its = 20000, dmin = 0, dmax = date_max, 
-                                                                                                      plotpdf = FALSE, plotpng = FALSE, plotname = FALSE))
-                                                                           }))
-                                                                           fit <- subset(z, grepl((gsub("[\\]", "", search_fit)), z, fixed = TRUE) == TRUE)
-                                                                           fit <- as.numeric(sub(search_fit, "", as.character(fit)))
-                                                                           if (any(grepl(search_rev, z, fixed = TRUE)) == TRUE) {
-                                                                             message(sprintf('Information: Too many models with age reversals in %s with type %d and smooth of %.1f - LANDO will not use this model type', CoreIDs[[core]], type, smo2))
-                                                                           } else if (fit == 'Inf' & best_fit == TRUE) {
-                                                                             message(sprintf('Information: clam flagged the model fit for %s with "Inf" for type %d and smooth of %.1f - LANDO will not use this model type', CoreIDs[[core]], type, smo2))
-                                                                           } else {
-                                                                             chron_model <- as.data.frame(chron[, 1:10000])
-                                                                             mid <- outer(CoreIDs[[core]], seq(0, date_max, by = 1), paste)
-                                                                             row.names(chron_model) <- outer(mid, sprintf('-clam_T%d_S%d', type, as.integer(smo2*10)), paste0)
-                                                                             chron_model$fit <- fit
-                                                                             return (chron_model)
-                                                                           }
-                                                                         }
-                                                                       }
-                                                 if (best_fit == TRUE){
-                                                   result_5th <- result_5th[result_5th$fit == min(result_5th$fit),]
-                                                 }
-                                                 return (result_5th)
-                                               }
-                                               ########################################
-                                             }
-                     message(sprintf(" Done with core %s - Number %d out of %d", CoreIDs[[core]], core, length(CoreIDs)))
-                     if (best_fit == TRUE){
-                       if (is.null(result_types)){
-                         message(sprintf("No suitable best fit model found for core %s", CoreIDs[[core]]))
-                       } else {
-                         result_types <- result_types[result_types$fit == min(result_types$fit),]
-                       }
-                     }
-                     return (result_types)
-                   }
+CoreLengths <- CoreLengths %>% mutate(corelength = as.integer(corelength))
+seq_id_all <- seq_along(CoreIDs)
 
-stopCluster(cl)
-rm(list = "cl")
-gc()
-registerDoSEQ()
+clam_core_results <- foreach(core = seq_id_all, .combine = dplyr::bind_rows) %do% {
 
-clam_core_results$fit <- NULL
-return (clam_core_results)
+  suppressPackageStartupMessages({
+    library(clam)
+    library(tidyverse)
+    library(data.table)
+    library(R.devices)
+  })
+
+  core_id <- CoreIDs[[core]]
+  message(sprintf("🌍 Starting core %s (%d of %d)", core_id, core, length(CoreIDs)))
+
+  core_selection <- clam_Frame %>% filter(str_detect(lab_ID, core_id))
+  clength <- CoreLengths %>% filter(coreid == core_id)
+  core_max <- clength$corelength
+  date_max <- floor(max(core_selection$depth, na.rm = TRUE))
+
+  types <- types_curve
+  poly_degree <- poly_degree_curve
+  smoothness <- smoothness_curve
+  n_depths <- length(unique(core_selection$depth))
+  if (n_depths < 4) types <- types[!types %in% 2]
+  if (n_depths < 6) types <- types[!types %in% c(4, 5)]
+  poly_degree <- poly_degree[poly_degree < n_depths]
+
+  shared_dir <- file.path(tempdir(), paste0("clam_", core_id))
+  dir.create(shared_dir, recursive = TRUE, showWarnings = FALSE)
+
+  model_tasks <- list()
+  for (type in types) {
+    if (type %in% c(1, 3)) {
+      model_tasks <- c(model_tasks, list(list(type = type, smooth = NULL, dmax = core_max)))
+    } else if (type == 2) {
+      model_tasks <- c(model_tasks, lapply(poly_degree, function(d) list(type = type, smooth = d, dmax = core_max)))
+    } else if (type %in% c(4, 5)) {
+      dmax_val <- ifelse(type == 5, date_max, core_max)
+      model_tasks <- c(model_tasks, lapply(smoothness, function(s) list(type = type, smooth = s, dmax = dmax_val)))
+    }
+  }
+
+  n_workers <- floor(detectCores(logical = TRUE) * 0.8)
+  inner_cl <- makeCluster(n_workers, outfile = "")
+  registerDoParallel(inner_cl)
+
+  model_results <- tryCatch({
+  foreach(task = model_tasks, 
+          .combine = dplyr::bind_rows, 
+          .errorhandling = "pass") %dopar% {
+
+      tryCatch({
+        suppressPackageStartupMessages({
+          library(clam)
+          library(tidyverse)
+          library(R.devices)
+        })
+
+        type <- task$type
+        smooth <- task$smooth
+        dmax <- task$dmax
+
+        label <- if (type == 2) sprintf("clam type %d degree %d", type, smooth)
+                 else if (type %in% c(4, 5)) sprintf("clam type %d smoothing %.1f", type, smooth)
+                 else sprintf("clam type %d", type)
+
+        model_dir <- file.path(shared_dir, gsub("[^a-zA-Z0-9_]", "_", label))
+        core_subdir <- file.path(model_dir, core_id)
+        dir.create(core_subdir, recursive = TRUE, showWarnings = FALSE)
+
+        write.csv(core_selection,
+                  file = file.path(core_subdir, paste0(core_id, ".csv")),
+                  row.names = FALSE, quote = FALSE)
+
+        suppressGraphics({
+          pdf(NULL)
+          clam_output <- tryCatch({
+
+            # Suppress cat/print output (stdout)
+            invisible(capture.output({
+
+              # Suppress message() output and capture it
+              out <- capture.output({
+                suppressWarnings({
+                  result <- clam(
+                    core = core_id,
+                    coredir = model_dir,
+                    type = type,
+                    smooth = smooth,
+                    its = 20000,
+                    dmin = 0,
+                    dmax = dmax,
+                    plotpdf = FALSE,
+                    plotpng = FALSE,
+                    plotname = FALSE
+                  )
+                  message("✅ Clam call returned successfully.")
+                })
+              }, type = "message")
+
+              # Write filtered messages
+              cleaned_out <- stringr::str_subset(out, "^((?!extrapolating beyond dated levels, dangerous!|^NULL$).)*$")
+              writeLines(cleaned_out, file.path(model_dir, "clam_output.txt"))
+
+            }))  # <-- end of capture.output for cat()
+
+            out  # Return message log
+
+          }, error = function(e) {
+            msg <- paste("❌ Clam run failed:", conditionMessage(e))
+            message(msg)
+            writeLines(msg, file.path(model_dir, "clam_error.txt"))
+            return(character(0))
+          })
+          dev.off()
+        })
+
+        fit_line <- stringr::str_subset(clam_output, "Fit \\(-log, lower is better\\):")
+        fit_val <- if (length(fit_line) > 0) {
+          stringr::str_extract(fit_line[1], "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?") %>% as.numeric()
+        } else {
+          NA_real_
+        }
+
+        reversal_warning <- any(stringr::str_detect(clam_output, "Age reversals occurred"))
+
+        # Handle exclusion conditions
+        if (is.na(fit_val) || !is.finite(fit_val)) {
+          message(sprintf("⚠️ Excluding %s for %s due to NA or infinite fit value", label, core_id))
+          if (exists("chron", envir = .GlobalEnv)) rm("chron", envir = .GlobalEnv)
+          gc()
+          return(NULL)
+        }
+        if (reversal_warning) {
+          message(sprintf("⚠️ Excluding %s for %s due to age reversal warning", label, core_id))
+          if (exists("chron", envir = .GlobalEnv)) rm("chron", envir = .GlobalEnv)
+          gc()
+          return(NULL)
+        }
+
+        cm_range <- 0:floor(dmax)
+
+        chron_matrix <- tryCatch({
+          df <- as.data.frame(chron[, seq_len(min(10000, ncol(chron)))])
+          rownames(df) <- sprintf("%s %d-%s", core_id, cm_range, gsub("clam ", "clam_", label))
+          df$fit <- fit_val
+          df$model_label <- sprintf("%s %d-%s", core_id, cm_range, gsub("clam ", "clam_", label))
+          df
+        }, error = function(e) {
+          message(sprintf("⚠️ Invalid chron output for %s — %s", core_id, label))
+          return(NULL)
+        })
+
+        if (exists("chron", envir = .GlobalEnv)) rm("chron", envir = .GlobalEnv)
+
+        message(sprintf("📏 Fit for %s — %s: %s", core_id, label, format(fit_val, digits = 5)))
+        message(sprintf("✅ Finished core %s — %s", core_id, label))
+        gc()
+
+        if (is.null(chron_matrix)) {
+          return(NULL)
+        } else {
+          return(chron_matrix)
+        }
+      }, error = function(e) {
+        message(sprintf("❌ Worker error in core %s — %s: %s", core_id, label, conditionMessage(e)))
+        return(NULL)
+      })
+
+    }
+  }, error = function(e) {
+    message(sprintf("❌ Inner loop failed for core %s: %s", core_id, conditionMessage(e)))
+    return(NULL)
+  })
+
+  stopCluster(inner_cl)
+  registerDoSEQ()
+
+  if (exists("best_fit") && isTRUE(best_fit) &&
+    !is.null(model_results) && "fit" %in% colnames(model_results)) {
+
+  valid_models <- model_results %>% filter(!is.na(fit), is.finite(fit))
+
+  if (nrow(valid_models) == 0) {
+      message(sprintf("⚠️ No valid models found for core %s — all fits were NA or infinite", core_id))
+      model_results <- NULL
+
+    } else {
+      # Find minimum fit
+      min_fit <- min(valid_models$fit, na.rm = TRUE)
+
+      # Filter rows with the best fit
+      best_models <- valid_models %>% filter(fit == min_fit)
+
+      # Extract model labels from rownames
+      model_labels <- stringr::str_extract(rownames(best_models), "clam_.*$")
+      unique_labels <- unique(model_labels)
+
+      if (length(unique_labels) == 1) {
+        message(sprintf("🏆 Selected best-fit model for core %s — %s", core_id, unique_labels))
+        model_results <- best_models
+      } else {
+        message(sprintf("ℹ️ Multiple best-fit models found for core %s (fit = %g), keeping all.", 
+                        core_id, min_fit))
+        model_results <- best_models
+      }
+    }
+
+  } else if (is.null(model_results) || nrow(model_results) == 0) {
+    model_results <- NULL
+  }
+
+  unlink(shared_dir, recursive = TRUE, force = TRUE)
+  return(model_results)
+}
+
+# Final result
+if (!is.null(clam_core_results) && "model_label" %in% colnames(clam_core_results)) {
+  clam_core_results <- clam_core_results %>%
+    relocate(model_label, .before = everything())
+}
+clam_core_results$fit <- NULL  
+return(clam_core_results)

@@ -1,0 +1,43 @@
+FROM jupyter/datascience-notebook:python-3.11 AS r-lib-builder
+
+USER root
+
+# Set environment variables for R
+ENV R_LIBS_SITE=/opt/conda/lib/R/library
+ENV RSPM=https://packagemanager.posit.co/cran/latest
+ENV R_REMOTES_NO_ERRORS_FROM_WARNINGS=true
+ENV RENV_CONFIG_DISABLE_CACHE=TRUE
+
+# Use your GitHub token to avoid rate limits
+ARG GITHUB_PAT
+ENV GITHUB_PAT=${GITHUB_PAT}
+
+# Install system dependencies for compiling R packages (e.g., arrow, rstan)
+RUN apt-get update && apt-get install -y \
+    libgdal-dev libgeos-dev libproj-dev \
+    build-essential gfortran \
+    g++ \
+    libcurl4-openssl-dev libssl-dev libxml2-dev \
+    libzstd-dev liblz4-dev libsnappy-dev libbrotli-dev \
+    libboost-all-dev \
+    cmake ninja-build \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set compiler flags for building C++ packages
+RUN mkdir -p /etc/R && \
+    echo "CXX14FLAGS=-O3 -march=native -mtune=native" >> /etc/R/Makevars && \
+    echo "CXX14=g++" >> /etc/R/Makevars
+
+# Install Arrow for R via Conda (fast, binary-based)
+RUN mamba install -y -c conda-forge r-arrow
+
+# Ensure the shared libraries are found at runtime
+ENV LD_LIBRARY_PATH=/opt/conda/lib:/usr/local/lib
+
+# Copy and install CRAN packages
+COPY install_r_packages.R /tmp/install_r_packages.R
+RUN Rscript /tmp/install_r_packages.R
+
+# Copy and install GitHub packages
+COPY install_remotes.R /tmp/install_remotes.R
+RUN Rscript /tmp/install_remotes.R

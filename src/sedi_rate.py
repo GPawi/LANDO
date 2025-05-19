@@ -16,7 +16,20 @@ from dask.distributed import Client , LocalCluster
 import joblib
 import multiprocessing
 import warnings
-dask.config.set({"distributed.comm.timeouts.tcp": "90s"})
+import logging
+
+tmp_path = "/tmp"
+
+logging.getLogger("distributed").setLevel(logging.ERROR)
+logging.getLogger("distributed.diskutils").setLevel(logging.CRITICAL)
+logging.getLogger("distributed.worker").setLevel(logging.ERROR)
+dask.config.set({
+    'temporary-directory': tmp_path,
+    'distributed.comm.timeouts.tcp': "90s",
+    'distributed.worker.memory.target': 0.6,
+    'distributed.worker.memory.spill': 0.7,
+    'distributed.worker.memory.pause': 0.8,
+    'distributed.worker.memory.terminate': 0.95})
 warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 

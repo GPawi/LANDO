@@ -1,437 +1,215 @@
-LANDO: Linked age-depth modeling
-========
+# LANDO: Linked Age-Depth Modeling
 
 [![DOI](https://zenodo.org/badge/432999664.svg)](https://zenodo.org/badge/latestdoi/432999664)
 
-<!-- LOGO -->
-<div id="top" align = "right"> 
-<img src='src/LANDO_Logo.jpg' align="right" height="120" />
+<div align="right">
+  <img src='src/LANDO_Logo.jpg' align="right" height="120" />
 </div>
 
-<!-- ABOUT THE PROJECT -->
-## About the project
+## About the Project
 
-**LANDO** links the most commonly used age-depth modeling software in one multi-language Jupyter Notebook, known as [_SoS notebook_](https://github.com/vatlab/sos-notebook) (Peng et al., 2018). Due to its design, the notebook uses four Jupyter kernels: Python, R, Octave, and MATLAB. We implemented the following modeling systems in **LANDO**:  
-   	* [_Bacon_](https://github.com/Maarten14C/rbacon) (Blaauw and Christen, 2011),  
-   	* [_Bchron_](https://github.com/andrewcparnell/Bchron) (Haslett and Parnell, 2008; Parnell et al., 2008),  
-   	* [_clam_](https://github.com/Maarten14C/clam) (Blaauw, 2010),  
-   	* [_hamstr_](https://github.com/EarthSystemDiagnostics/hamstr) (Dolman, 2021),  
-   	* [_Undatable_](https://github.com/bryanlougheed/undatable) (Lougheed and Obrochta, 2019).  
-Furthermore, **LANDO** uses the [fuzzy changepoint](https://github.com/mjhollaway/Fuzzy_cpt_eval) method by Holloway et al. (2021) to evaluate the performance of modeling systems to represent lithological change based on independent proxy data. **LANDO** can run models for single or multiple sediment cores.
+**LANDO** integrates the most commonly used age-depth modeling software into a unified multi-language Jupyter Notebook interface powered by [SoS Notebook](https://github.com/vatlab/sos-notebook). It supports:
 
-<!-- GETTING STARTED -->
-## Getting started
-<!-- PREREQUISITES -->
-### _Prerequisites_
+- [_Bacon_](https://github.com/Maarten14C/rbacon) (Blaauw and Christen, 2011)
+- [_Bchron_](https://github.com/andrewcparnell/Bchron) (Haslett and Parnell, 2008; Parnell et al., 2008) 
+- [_clam_](https://github.com/Maarten14C/clam) (Blaauw, 2010)  
+- [_hamstr_](https://github.com/EarthSystemDiagnostics/hamstr) (Dolman, 2021)  
+- [_Undatable_](https://github.com/bryanlougheed/undatable) (Lougheed and Obrochta, 2019)  
+ 
 
-We used the following programming languages versions to develop **LANDO**:  
+It also supports fuzzy changepoint detection via [Holloway et al. (2021)](https://doi.org/10.1016/j.envsoft.2021.104993) to test model agreement with lithological changes.
 
-Programming language | Version  
-:---- | ----: 
-R | 4.1.2  
-Python | 3.9 
-Octave | 6.4.0 
-MATLAB[^1] | 2020b  
+---
 
-### _Installing programming languages_
+## 🚀 Quickstart with Docker
 
-When you install the programming languages, make a note of where you installed them. First, we recommend to use [miniconda](https://docs.conda.io/en/latest/miniconda.html) (400 MB required disk space) to manage all necessary Python packages and to make the installation process easier. Each version of miniconda comes with a version of Python.  
+You can run **LANDO** with no setup beyond Docker itself.
 
-**Windows** users can download and install the current version of R from [CRAN](https://cran.r-project.org). [Here](https://www.gnu.org/software/octave/download) you can find the current version of Octave for your operating system. Please install Octave as administator for all users and rename the folder to "GNU_Octave" (with an underscore) instead of "GNU Octave" (without an underscore) in the installation process, otherwise it can cause complications.
+### ⚙️ Prerequisites
 
+Before you can use LANDO, you'll need to install Docker and adjust its memory settings:
 
-For **macOS** users we recommend installing R and Octave using `brew` in the `Terminal`:
+1. **Install Docker Desktop**  
+   👉 [Download for Windows/macOS](https://www.docker.com/products/docker-desktop)  
+   Follow the installation instructions for your operating system.
 
-_Installing brew_
+2. **Increase Docker Memory (Important!)**  
+   LANDO requires at least **12 GB of RAM** to run the included examples smoothly.  
+   - Open Docker Desktop  
+   - Go to: ⚙️ Settings > Resources > Memory  
+   - Drag the memory slider to **at least 12 GB**  
+   - Click "Apply & Restart"
 
-~~~
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-~~~
+Once that’s done, you’re ready to launch LANDO!
 
-_Installing R with brew_
 
-~~~
-> brew install cask
-> brew install v8
-> brew install openssl
-> brew install libgit2
-> brew install --cask xquartz
-> brew install --cask r
-~~~
+---
 
-_Installing Octave with brew_
+### 🧪 Option 1: Run LANDO from a Local GitHub Clone (recommended)
 
-~~~
-brew install octave
-~~~
+If you cloned this GitHub repository, you can launch LANDO with one command using the built-in launcher script:
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+```bash
+./LANDO
+```
 
-### _Installing other tools_
+This starts Docker using Docker Compose, waits for JupyterLab to initialize, and opens it in your browser.
 
-**Windows**: Please make sure you have Rtools4 installed - the instructions can be found [here](https://cran.r-project.org/bin/windows/Rtools/).
+#### 🖥️ How to do it:
 
-**macOS**: Make sure you have Xcode and the command line tool (CLT) installed on your computer - [here](https://www.freecodecamp.org/news/how-to-download-and-install-xcode/amp/) are the instructions. Also install the appropriate `gfortran` version for your **macOS** version from [GitHub](https://github.com/fxcoudert/gfortran-for-macOS/releases). Further information on the installation process of `gfortran` can be found on this [website](https://thecoatlessprofessor.com/programming/cpp/r-compiler-tools-for-rcpp-on-macos/). 
+1. Open a terminal  
+2. Go into the cloned folder:
+   ```bash
+   cd /path/to/LANDO
+   ```
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+3. Run:
+   ```bash
+   ./LANDO
+   ```
 
+> 📎 If needed, make it executable: `chmod +x LANDO`  
+> 🔧 You can inspect or modify the script in `launch-lando.sh`
 
-### _Setting up conda environment_
+---
 
-After installing all programming languages, users have to start conda by either  
-a) open the `Anaconda Powershell Prompt` from the Start menu (**Windows**) or  
-b) open the `Terminal` - from the Launchpad or from the Finder in the Applications/Utilities folder - and enter `source /opt/miniconda3/bin/activate` (**macOS**).
+### 🐳 Option 2: Run LANDO via Docker Only (no GitHub repo needed)
 
-Then users of both systems should enter the following lines:  
+LANDO now includes an internal startup script, so all you need to do is:
 
-_Creating conda environment_
+```bash
+docker run -it -p 8888:8888 gregpfalz/lando-age-depth
+```
 
-~~~
-conda create --name LANDO  
-~~~
+➡️ This will:
+- Automatically create required folders (like `tmp_host`)
+- Launch JupyterLab without requiring a token
+- Open directly into the main notebook (`LANDO.ipynb`)
 
-_Activate this environment_  
+Then open your browser to:
+[http://localhost:8888/lab/tree/LANDO.ipynb](http://localhost:8888/lab/tree/LANDO.ipynb)
 
-~~~
-conda activate LANDO
-~~~
+> 💡 Tip: Add `--rm` to delete the container after stopping:
+```bash
+docker run --rm -it -p 8888:8888 gregpfalz/lando-age-depth
+```
+> 📝 Note: All example files and notebooks are included in the Docker image.  
+> You only need to mount volumes if you want to save your work or use custom input files.
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+🔧 Advanced: To save work between runs, mount a local folder like so:
+```bash
+docker run -it -p 8888:8888 -v $(pwd)/my_data:/home/jovyan/data gregpfalz/lando-age-depth
+```
 
-### _Getting **LANDO**_
+---
 
-Users can download **LANDO** as [ZIP](https://github.com/GPawi/LANDO/archive/refs/heads/main.zip) or clone the repository via GitHub. **Windows** users will need to unzip the downloaded item into a folder named "LANDO-main". 
+## 📤 Uploading Your Own Data (Easiest Method)
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+Once LANDO is running and you’re inside the JupyterLab interface:
 
-<!-- INSTALLATION -->
-## Installation of LANDO
-#### **Windows**
+1. Click the **Upload** button at the top-left of the Jupyter file browser
+2. Select a `.xslx` file with your data in the LANDO format from your computer
+3. Your file will appear in the workspace, ready to use in the notebooks
 
-First, open the `Anaconda Powershell Prompt` and navigate to the location of the LANDO-main folder by using either the `cd` command (change to directory on same drive) or the `pushd` command (change to directory on different drive). For this example, we assume that the `Anaconda Powershell Prompt` opens on the `C:` drive and the unpacked zip file "LANDO-main" is on the drive `E:`:
+> ⚠️ Note: files uploaded this way are *temporary*. If you stop the container, the files will be deleted. Be sure to download any outputs before exiting.
 
-~~~
-pushd E:/LANDO-main
-~~~
+---
 
-If not already done, activate your conda environment in the Anconda prompt:
+## 🛑 Good Practice: Shutting Down LANDO
 
-~~~
-conda activate LANDO
-~~~
+### 📘 If You Started LANDO with `./LANDO` (Option 1 – GitHub Clone)
 
-###### Python
+Just press:
 
-One by one, use these following lines to install all python packages and accept the installation with yes ("y"). In some cases, conda will take a while to find the approriate packages from the conda-forge environment ("Solving environment").
+```
+Ctrl+C
+```
 
-~~~
-> conda install --file requirements_forge.txt -c conda-forge
-> mamba install pyarrow -c conda-forge
-> conda install pip
-> python -m pip install -r requirements.txt
-> python -m sos_notebook.install
-~~~
+in the terminal where it’s running. This will:
+- Gracefully shut down the Docker container
+- Clean up temporary folders (like `tmp_host`)
+- Leave your local files and data intact
 
-###### R
+---
 
-To add the R kernel (IRkernel) to the Jupyter Notebook, first navigate in the `Anaconda Powershell Prompt` to the location of your R installation. In our working example, R was located in `C:/PROGRA~1/R/R-4.1.2/bin/x64`. Then use the following lines to install the kernel. Subsequently, navigate back to the LANDO-main folder.
+### 🐳 If You Started LANDO with `docker run` (Option 2 – Docker Only)
 
-~~~
-> pushd C:/PROGRA~1/R/R-4.1.2/bin/x64
-> ./R -e 'install.packages("IRkernel", repos = "https://cloud.r-project.org")'
-> ./R -e 'IRkernel::installspec()'
-> pushd E:/LANDO-main
-~~~
+You have two main options:
 
-In case of an error message, there are three potential solutions:  
-> a) substitute `./R` with `Rscript`.  
+#### ✅ Recommended: Use `--rm` for auto-cleanup
 
-> b) Alternatively, you can open R in the `Anaconda Powershell Prompt` by changing to the location of R, then use the `./R` command to activate R and then enter the two commands in between the single quotes `'`: 
+This deletes the container automatically after exit:
 
-> - `install.packages("IRkernel", repos = "https://cloud.r-project.org")`  
-> - `IRkernel::installspec()`  
+```bash
+docker run --rm -it -p 8888:8888 gregpfalz/lando-age-depth
+```
 
-> Finally, quit R with `q()` and navigate back to the LANDO-main folder with `pushd` or `cd`.  
+Then just close the browser tab and press `Ctrl+C` in the terminal.
 
-> c) Open "R x64 4.1.2" from your desktop or via the start menu and enter the two commands in between the single quotes:
+#### 🧹 If You Did Not Use `--rm`
 
-> - `install.packages("IRkernel", repos = "https://cloud.r-project.org")`  
-> - `IRkernel::installspec()`  
+You’ll need to clean up manually:
 
-###### Octave
+1. First, stop the container (if it’s still running):
 
-To ensure that the Octave kernel is linked to the installed Octave version, we have to follow the instructions on [GitHub](https://github.com/Calysto/octave_kernel): 
+```bash
+docker ps
+docker stop <container_id>
+```
 
->We require the octave-cli executable to run the kernel. Add that executable's directory to the PATH environment variable or use the OCTAVE_EXECUTABLE to point to the executable itself. Note that on Octave 6.4.0 on Windows, the executable is in "Octave-6.4.0\mingw64\bin\".
+2. Then remove unused containers/images:
 
-[Here](https://www.c-sharpcorner.com/article/add-a-directory-to-path-environment-variable-in-windows-10/) is an explanation of how to add the directory to the path. In our working example the directory was `C:\PROGRA~1\GNU_Octave\Octave-6.4.0\mingw64\bin\`. 
-Later on, in case the Octave kernel isn't connected to the octave-cli executable, it is possible to add a new variable to the users variables with the name `OCTAVE_EXECUTABLE` and the value `C:\PROGRA~1\GNU_Octave\Octave-6.4.0\mingw64\bin\octave-cli.exe`.
+```bash
+docker container prune
+docker image prune
+```
 
-After that please open `GNU Octave (GUI)` from your desktop or the start menu and install the following five packages within the GUI. The installation process can take a while.
+> 💡 These commands remove stopped containers or dangling images. They won’t delete anything running or important.
 
-~~~
-> pkg install -forge io
-> pkg install -forge statistics
-> pkg install -forge dataframe
-> pkg install -forge struct
-~~~
+---
 
-###### Kernels
+### 💬 Tip: Always Download Your Results
 
-To verify that your installation has worked, check with the following line within your `Anaconda Powershell Prompt`, if all three kernels are correctly installed:
+Remember that anything **inside the container** is temporary unless you:
+- Mount a folder (`-v $(pwd)/my_data:/home/jovyan/data`), or
+- Manually download files from JupyterLab before shutdown
 
-~~~
-jupyter kernelspec list
-~~~
 
-The output should look like this:
+## 🔧 Built-in Language Support
 
-~~~
-Available kernels:
-	ir
-	octave
-	python3
-	sos
-~~~
+| Language | Version |
+|----------|--------:|
+| Python   | 3.11    |
+| R        | 4.3.1   |
+| Octave   | 8.3.0   |
 
-###### Package installation
+_MATLAB support is not bundled due to licensing._
 
-Then open the Jupyter Notebook by typing into the `Anaconda Powershell Prompt`:
+---
 
-~~~
-jupyter notebook
-~~~
+## 🛠 Functionality
 
-Click on the `Install-requirements.ipynb` notebook and execute the first two cells with R code within this notebook. This can take up to an hour. After everything is installed, you can close the notebook using `File` --> `Close and halt`. **LANDO** should be now ready for use.
+LANDO enables age-depth modeling across single and multiple cores. Input data can be supplied via CSV or PostgreSQL. Outputs include calibrated chronologies and visualizations.
 
-If you run into any problems, please open an issue [here](https://github.com/GPawi/LANDO/issues).
+| Modeling System | Key Parameters |
+|-----------------|----------------|
+| Bacon           | `acc.shape`, `acc.mean`, `mem.strength`, `ssize` |
+| clam            | `types_curve`, `smoothness_curve`, `poly_degree_curve` |
+| hamstr          | `K_fine` |
+| Undatable       | `xfactor`, `bootpc` |
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+Call `help()` in Python cells for function documentation, e.g. `help(age_sr_plot.PlotAgeSR.plot_graph)`.
 
-#### **macOS**
+---
 
-First, open the `Terminal` and start conda with `source /opt/miniconda3/bin/activate`. Then navigate to the location of the LANDO-main folder by using the `cd` command. For this example, we assume the zip file "LANDO-main" is in the "Downloads" folder:
-
-~~~
-cd ~/Downloads/LANDO-main
-~~~
-
-If not already done, activate your conda environment in the terminal:
-
-~~~
-conda activate LANDO
-~~~
-
-###### Python
-
-One by one, use these following lines to install all python packages and accept the installation with yes ("y"). In some cases, conda will take a while to find the approriate packages from the conda-forge environment ("Solving environment").
-
-~~~
-> conda install --file requirements_forge.txt -c conda-forge
-> mamba install pyarrow -c conda-forge
-> conda install pip
-> python -m pip install -r requirements.txt
-> python -m sos_notebook.install
-~~~
-
-###### R
-
-Then add the R kernel (IRkernel) to the Jupyter Notebook via the `Terminal`:
-
-~~~
-> Rscript -e 'install.packages("IRkernel", repos = "https://cloud.r-project.org")'
-> Rscript -e 'IRkernel::installspec()'
-~~~
-
-###### Octave
-
-To ensure that the Octave kernel is linked to the installed Octave version, we have to follow the instructions on [GitHub](https://github.com/Calysto/octave_kernel): 
-
->We require the octave-cli executable to run the kernel. Add that executable's directory to the PATH environment variable or use the OCTAVE_EXECUTABLE to point to the executable itself.
-
-In our working example, the executable was in this directory `/usr/local/Cellar/octave/6.4.0/bin` and therefore we set OCTAVE_EXECUTABLE so that it points to the excutable there:
-
-~~~
-export OCTAVE_EXECUTABLE=/usr/local/Cellar/octave/6.4.0/bin/octave-cli
-~~~
-
-You then need to install the relevant Octave packages. For this please open Octave in your terminal by typing:
-~~~
-> octave --no-gui
-~~~
-
-Now execute the following lines in the Octave environment, which can take a while:
-~~~
-> pkg install -forge io
-> pkg install -forge statistics
-> pkg install -forge dataframe
-> pkg install -forge struct
-~~~
-You can leave Octave by typing `exit`.
-
-###### Kernels
-
-To verify that your installation has worked, check with the following line, if all three kernels are correctly installed:
-
-~~~
-jupter kernelspec list
-~~~
-
-The output should look like this:
-
-~~~
-Available kernels:
-	ir
-	octave
-	python3
-	sos
-~~~
-
-###### .mex files
-
-In some cases, **macOS** flags the `.mex` files in the **LANDO** repository as malicious. This can be checked by the following line:
-
-~~~
-xattr src/UndatableFolder/private 
-~~~
-
-If the answer is `com.apple.quarantine` or if you want to avoid a potential error message, please use the following two lines:
-
-~~~
-> sudo xattr -r -d com.apple.quarantine src/UndatableFolder/private
-> sudo find src/UndatableFolder/private -name \*.mex -exec spctl --add {} \;
-~~~
-
-###### Package installation
-
-Then open the Jupyter Notebook by typing into the `Terminal`:
-
-~~~
-jupyter notebook
-~~~
-
-Click on the `Install-requirements.ipynb` notebook and execute the cells within this notebook. This can take up to an hour. After everything is installed, you can close the notebook using `File` --> `Close and halt`. **LANDO** should be now ready for use.
-
-If you run into any problems, please open an issue [here](https://github.com/GPawi/LANDO/issues).
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-<!-- USAGE OF LANDO -->
-## _Run LANDO_
-
-Open your `Anaconda Powershell Prompt` or `Terminal`(and start conda). Then change to the directory of the LANDO-main repository. Activate your environment and lunch Jupyter Notebook. In our working example, we use a **Windows** machine, the `Anaconda Powershell Prompt` and the LANDO-main folder on another drive: 
-
-~~~
-> pushd E:/LANDO-main
-> conda activate LANDO
-> jupyter notebook
-~~~
-
-Launch **LANDO** by clicking on LANDO.ipynb.
-
-There are four ways to retrieve age determination data: 
-
-Input | Code  
-:---- | :---- 
-Data for one single core from file | `dates = gd.AgeFromFileOneCore()` 
-Data for multiple cores from file | `dates = gd.AgeFromFileMultiCore()`  
-Data for one single core from a database | `dates = gd.AgeFromDBOneCore()`  
-Data for multiple cores from a database | `dates = gd.AgeFromDBMultiCore()`
-
-And two ways to retrieve proxy data:
-
-Input | Code  
-:---- | :---- 
-Data from file | `proxy = gd.ProxyFromFile()` 
-Data from database | `proxy = gd.ProxyFromDB()` 
-
-There are different parameters that can be adjusted for each modeling software in LANDO
-
-Modeling software | Parameter | Default value
-:---- | :---- | ----:
-_Bacon_ | acc.shape | 1.5
-_Bacon_ | acc.mean | 20
-_Bacon_ | mem.strength | 10
-_Bacon_ | mem.mean | 0.5
-_Bacon_ | ssize | 8000
-_clam_ | types_curve | 1:5
-_clam_ | smoothness_curve | 0.1*(1:10)
- _clam_| poly\_degree_curve | 1:4
-_hamstr_ | K | c(10,10)
-_Undatable_ | xfactor | 0.1
-_Undatable_ | bootpc | 30 
-
-If you want to know more about the implemented functions, please use the `help()` function in Python. For instance, using `help(age_sr_plot.PlotAgeSR.plot_graph)` returns:
-
-> Help on function plot\_graph in module src.age\_sr_plot:
-
-> plot\_graph(self, orig\_dir, sigma\_range='both', bin\_size=1000, xlim\_max=None, number\_col=7, reduce\_plot\_axis=False, only\_combined=False, save=False, for\_color_blind=False, as\_jpg=False)  
-    Main function to plot data for single core and multi-core case
-    
-> parameters:  
-    @self.orig\_dir: original directory where LANDO was launched, so that plots can be saved to the folder "output\_figures"  
-    @self.sigma\_range: sigma range that should be shown in the plot - the options are: 'both', '1sigma', '2sigma', and None  
-    @self.bin\_size: this argument only works for the multi-core case; defines the bin size in years; default value: 1000  
-    @self.xlim\_max: this argument only works for the multi-core case; defines the maximum age range in years to be plotted; default value: None  
-    @self.number\_col: only works for the multi-core case; defines the number of columns to plot; default value: 7  
-    @self.reduce\_plot\_axis: only works for the multi-core case; reduces the number that are plotted on the axis; default value: False  
-    @self.only\_combined: argument to decide if only combined model should be plotted; default value: False  
-    @self.save: argument to decide if plot should be saved to location given in orig\_dir; default value: False  
-    @self.for\_color\_blind: argument to transform plot to be suitable for people with color vision deficiency; default value: False  
-    @self.as\_jpg: argument to plot grafics as .jpg (default is .pdf), which works best for color-blind plot; default value: False  
-    
-> returns:
-    Main output plot from LANDO
-
-You can close the notebook using `File` --> `Close and halt`. On the main page click on `Quit` and close the tab. Enter `exit` in the `Anaconda Powershell Prompt` or `Terminal` to stop conda. In case of hidden running processes, use `Alt`+`F4` (**Windows**) or `command`+`Q` (**macOS**).
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-<!-- FUTURE PLANS -->
-## Future Plans
-
-* Add OxCal to LANDO  
-
-See the [open issues](https://github.com/GPawi/LANDO/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-<!-- LICENSE -->
 ## License
 
-Distributed under the GNU GPLv3 License. See `LICENSE.txt` for more information.
+GNU GPLv3 – See `LICENSE.txt` for details.
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+---
 
-<!-- CONTACT -->
 ## Contact
 
-Gregor Pfalz - Gregor.Pfalz@awi.de - [@ClimateCompathy](https://twitter.com/ClimateCompathy)
-
-Project Link: [https://github.com/GPawi/LANDO](https://github.com/GPawi/LANDO)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-<!-- REFERENCES -->
-## References
-
-Blaauw, M.: Methods and code for “classical” age-modelling of radiocarbon sequences, Quat. Geochronol., 5, 512–518, [https://doi.org/10.1016/j.quageo.2010.01.002](https://doi.org/10.1016/j.quageo.2010.01.002), 2010.
-
-Blaauw, M. and Christen, J. A.: Flexible paleoclimate age-depth models using an autoregressive gamma process, Bayesian Anal., 6, 457–474, [https://doi.org/10.1214/11-BA618](https://doi.org/10.1214/11-BA618), 2011.
-
-Dolman, A. M.: hamstr: Hierarchical Accumulation Modelling with Stan and R, [https://github.com/EarthSystemDiagnostics/hamstr](https://github.com/EarthSystemDiagnostics/hamstr), 2021.
-
-Haslett, J. and Parnell, A.: A simple monotone process with application to radiocarbon-dated depth chronologies, J. R. Stat. Soc. Ser. C Appl. Stat., 57, 399–418, [https://doi.org/10.1111/j.1467-9876.2008.00623.x](https://doi.org/10.1111/j.1467-9876.2008.00623.x), 2008.
-
-Hollaway, M. J., Henrys, P. A., Killick, R., Leeson, A., and Watkins, J.: Evaluating the ability of numerical models to capture important shifts in environmental time series: A fuzzy change point approach, Environ. Model. Softw., 139, 104993, [https://doi.org/10.1016/j.envsoft.2021.104993](https://doi.org/10.1016/j.envsoft.2021.104993), 2021.
-
-Lougheed, B. C. and Obrochta, S. P.: A Rapid, Deterministic Age-Depth Modeling Routine for Geological Sequences With Inherent Depth Uncertainty, Paleoceanogr. Paleoclimatology, 34, 122–133, [https://doi.org/10.1029/2018PA003457](https://doi.org/10.1029/2018PA003457), 2019.
-
-Parnell, A. C., Haslett, J., Allen, J. R. M., Buck, C. E., and Huntley, B.: A flexible approach to assessing synchroneity of past events using Bayesian reconstructions of sedimentation history, Quat. Sci. Rev., 27, 1872–1885, [https://doi.org/10.1016/j.quascirev.2008.07.009](https://doi.org/10.1016/j.quascirev.2008.07.009), 2008.
-
-Peng, B., Wang, G., Ma, J., Leong, M. C., Wakefield, C., Melott, J., Chiu, Y., Du, D., and Weinstein, J. N.: SoS notebook: An interactive multi-language data analysis environment, 34, 3768–3770, [https://doi.org/10.1093/bioinformatics/bty405](https://doi.org/10.1093/bioinformatics/bty405), 2018.
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-[^1]: Since we want to keep LANDO open source, the installation process does not include instructions for the MATLAB kernel. If you have an active MATLAB license, please follow the instructions on the [SoS notebook website](https://vatlab.github.io/sos-docs/running.html#-matlab). We provide the necessary code to run the MATLAB version of Undatable in the repository, which can replace the Octave version.
+Gregor Pfalz – [Gregor.Pfalz@aon.com](mailto:Gregor.Pfalz@aon.com)  
+Bluesky: [@ClimateCompathy](https://bsky.app/profile/climatecompathy.bsky.social)  
+GitHub: [https://github.com/GPawi/LANDO](https://github.com/GPawi/LANDO)

@@ -1,135 +1,105 @@
 ### Script to run hamstr in LANDO ###
-## Load libraries
-suppressPackageStartupMessages(c(library('hamstr'),
-library('rstan'),
-library('Bchron'),
-library('tidyverse'),
-library('parallel'),
-library('foreach'),
-library('doSNOW'),
-library('doRNG')))
+
+# ---- Load libraries ----
+suppressPackageStartupMessages({
+  library(hamstr)
+  library(Bchron)
+  library(tidyverse)
+  library(parallel)
+  library(foreach)
+  library(doSNOW)
+  library(doRNG)
+})
+
 set.seed(20201224)
 
+# ---- Helper to calibrate dates with Bchron ----
+calibrate_ages <- function(df) {
+  df <- df %>%
+    mutate(across(c(ages, ageSds), as.integer))
+
+  cal <- BchronCalibrate(
+    ages = df$ages,
+    ageSds = df$ageSds,
+    calCurves = df$calCurves,
+    allowOutside = TRUE
+  )
+
+  suppressWarnings({
+    df$ages_calib <- sapply(cal, \(x) hamstr:::SummariseEmpiricalPDF(x$ageGrid, x$densities)["mean"])
+    df$ages_calib_Sds <- sapply(cal, \(x) hamstr:::SummariseEmpiricalPDF(x$ageGrid, x$densities)["sd"])
+  })
+
+  return(df)
+}
+
+# ---- Hamstr runner for one core ----
+run_hamstr_for_core <- function(core_id, hamstr_Frame, CoreLengths,
+                                K_fine = 100, iter = 6667,
+                                min_age = -150, top_depth = 0) {
+  core_data <- hamstr_Frame %>% filter(str_detect(id, core_id))
+  clength <- CoreLengths %>% filter(str_detect(coreid, core_id))
+  bottom_depth <- clength$corelength
+
+  fit <- hamstr(
+    depth = core_data$position,
+    obs_age = core_data$ages_calib,
+    obs_err = core_data$ages_calib_Sds,
+    min_age = min_age,
+    top_depth = top_depth,
+    bottom_depth = bottom_depth,
+    K_fine = K_fine,
+    stan_sampler_args = list(iter = iter, control = list(max_treedepth = 15))
+  )
+
+  pred <- predict(fit, depth = seq(top_depth, bottom_depth, by = 1)) |>
+    as.data.frame() |>
+    mutate(depth = paste(core_id, depth, sep = " ")) |>
+    pivot_wider(names_from = iter, values_from = age)
+
+  pred <- pred[, 1:min(ncol(pred), 10001)]  # Limit columns
+  message(sprintf("✅ Done with core: %s", core_id))
+  return(pred)
+}
+
+# ---- Run block ----
+hamstr_Frame <- hamstr_Frame |>
+  mutate(across(everything(), \(x) type.convert(x, as.is = TRUE))) |>
+  calibrate_ages()
 
 if (length(CoreIDs) == 1) {
-  i = 1
-  ## Load data and calibrate
-  hamstr_Frame = hamstr_Frame %>%
-    mutate_all(type.convert,as.is = TRUE) %>%
-    mutate_at(c("ages", "ageSds"), as.integer)
-  cal.ages = BchronCalibrate(ages = hamstr_Frame$ages, ageSds = hamstr_Frame$ageSds, calCurves = hamstr_Frame$calCurves, allowOutside = TRUE)
-  suppressWarnings({
-    hamstr_Frame$ages_calib <- sapply(cal.ages, function(x){
-      hamstr:::SummariseEmpiricalPDF(x$ageGrid, x$densities)["mean"]
-    })
-    
-    hamstr_Frame$ages_calib_Sds <- sapply(cal.ages, function(x){
-      hamstr:::SummariseEmpiricalPDF(x$ageGrid, x$densities)["sd"]
-    })})
-  
-  ### Do calculations
-  if (parallel::detectCores() >= 3) options(mc.cores = 3)
-  core_selection <- hamstr_Frame %>% filter(str_detect(id, CoreIDs[[i]]))
-  clength <- CoreLengths %>% filter(str_detect(coreid, CoreIDs[[i]]))
-  hamstr_fitting <- hamstr(depth = core_selection$position,
-                           obs_age = core_selection$ages_calib,
-                           obs_err = core_selection$ages_calib_Sds,
-                           min_age = -150, 
-                           top_depth = 0,
-                           bottom_depth = clength$corelength,
-                           K = K, #c(10, 10),
-                           stan_sampler_args = get_stan_sampler_args(iter = 6667))
-  age.mods.interp <- hamstr:::predict.hamstr_fit(hamstr_fitting,depth = seq(0,clength$corelength, by = 1)) # for meter: by = 100
-  result_individual_core <- as.data.frame(age.mods.interp)
-  result_individual_core$depth <- factor(result_individual_core$depth) 
-  result_individual_core$depth <- paste(CoreIDs[[i]], result_individual_core$depth)
-  result_individual_core <- spread(result_individual_core, iter, age)
-  hamstr_core_results <- result_individual_core[, 1:10001]
-  message(sprintf("Done with core number: %d out of %d", i, length(CoreIDs)))
-  return(hamstr_core_results)
-  
+  hamstr_core_results <- run_hamstr_for_core(CoreIDs[[1]], hamstr_Frame, CoreLengths)
 } else {
-  ### Parallel add - hamstr parallel
-  hamstr_parallel <- function(...) {
-    if (parallel::detectCores() >= 3) options(mc.cores = 3)
-    core_selection <- hamstr_Frame %>% filter(str_detect(id, CoreIDs[[i]]))
-    clength <- CoreLengths %>% filter(str_detect(coreid, CoreIDs[[i]]))
-    hamstr_fitting <- hamstr(depth = core_selection$position,
-                             obs_age = core_selection$ages_calib,
-                             obs_err = core_selection$ages_calib_Sds,
-                             min_age = -150, 
-                             top_depth = 0,
-                             bottom_depth = clength$corelength,
-                             K = K, #c(10, 10),
-                             stan_sampler_args = get_stan_sampler_args(iter = 6667))
-    age.mods.interp <- hamstr:::predict.hamstr_fit(hamstr_fitting,depth = seq(0,clength$corelength, by = 1)) # for meter: by = 100
-    result_individual_core <- as.data.frame(age.mods.interp)
-    result_individual_core$depth <- factor(result_individual_core$depth) 
-    result_individual_core$depth <- paste(CoreIDs[[i]], result_individual_core$depth)
-    result_individual_core <- spread(result_individual_core, iter, age)
-    result_individual_core <- result_individual_core[, 1:10001]
-    message(sprintf("Done with core number: %d out of %d", i, length(CoreIDs)))
-    return (result_individual_core)
-  }
-  
-  
-  ## Parallel add - Initialize cluster
-  no_cores <- detectCores(logical = TRUE)
-  if ((no_cores/4) < length(CoreIDs)) {
-    cl <- makeCluster((no_cores/4), outfile = "", autoStop = TRUE)
-    } else {cl <- makeCluster(length(CoreIDs), outfile = "", autoStop = TRUE)} 
+  n_cores <- min(detectCores(logical = TRUE), length(CoreIDs))
+  cl <- makeCluster(n_cores, outfile = "", autoStop = TRUE)
   registerDoSNOW(cl)
-  seed <- 210330
-  
-  
-  ## Load data and calibrate
-  hamstr_Frame = hamstr_Frame %>%
-      mutate_all(type.convert,as.is = TRUE) %>%
-      mutate_at(c("ages", "ageSds"), as.integer)
-  cal.ages = BchronCalibrate(ages = hamstr_Frame$ages, ageSds = hamstr_Frame$ageSds, calCurves = hamstr_Frame$calCurves, allowOutside = TRUE)
-  suppressWarnings({
-    hamstr_Frame$ages_calib <- sapply(cal.ages, function(x){
-      hamstr:::SummariseEmpiricalPDF(x$ageGrid, x$densities)["mean"]
+
+  # Wrapped safe runner with libraries loaded inside
+  run_safe_hamstr <- function(i) {
+    suppressPackageStartupMessages({
+      library(hamstr)
+      library(Bchron)
+      library(tidyverse)
     })
-    
-    hamstr_Frame$ages_calib_Sds <- sapply(cal.ages, function(x){
-      hamstr:::SummariseEmpiricalPDF(x$ageGrid, x$densities)["sd"]
-    })})
-  
-  
-  ## Parallel add - cluster export data
-  seq_id_all <- 1:length(CoreIDs)
-  clusterExport(cl,list('hamstr_parallel','hamstr_Frame','CoreIDs','CoreLengths'))
-  
-  
-  ## Run hamstr and prepare output
-  hamstr_core_results <- foreach(i = seq_id_all 
-                                #,.combine='rbind'
-                                ,.combine=dplyr::bind_rows
-                                ,.multicombine = TRUE
-                                ,.maxcombine = 1000
-                                ,.inorder = FALSE
-                                ,.options.RNG=seed
-                                
-  ) %dorng% {
-    suppressPackageStartupMessages(c(library('tidyverse'), 
-                                     library('hamstr'), 
-                                     library('rstan'), 
-                                     library('foreach'), 
-                                     library('parallel')))
+
+    core_id <- CoreIDs[[i]]
     tryCatch(
-      hamstr_parallel(i, hamstr_Frame, CoreIDs)
-       ,error = function(e){
-        message(sprintf(" Caught an error in task %d! (%s)", i, CoreIDs[[i]]))
-        print(e)
+      run_hamstr_for_core(core_id, hamstr_Frame, CoreLengths),
+      error = function(e) {
+        message(sprintf("⚠️ Error in core %s: %s", core_id, e$message))
+        NULL
       }
     )
   }
-  
+
+  hamstr_core_results <- foreach(i = seq_along(CoreIDs),
+                                 .combine = bind_rows,
+                                 .options.RNG = 20201224) %dorng% {
+    run_safe_hamstr(i)
+  }
+
   stopCluster(cl)
-  rm(list = "cl")
-  gc()
   registerDoSEQ()
-  
-  return(hamstr_core_results)
 }
+
+return(hamstr_core_results)

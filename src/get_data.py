@@ -521,6 +521,7 @@ class AgeFromFileOneCore(object):
             self.fc.use_dir_icons = True
             self.fc.filter_pattern = ['*.xlsx']
             display(self.fc)
+            print("Pleae select your file and then continue with the execution of the next cell.")
                    
     def __select_data_one_core(self):
         """
@@ -565,18 +566,21 @@ class AgeFromFileOneCore(object):
             self.coreid = ''.join(map(str, self.__input_age_one_core['coreid'].unique()))
             ### For detection limit
             self.__input_age_one_core.reset_index(drop = True, inplace = True)
-            for i in range(0, len(self.__input_age_one_core)):
-                if type(self.__input_age_one_core.iloc[i,8]) is str and '>' in self.__input_age_one_core.iloc[i,8]:
-                    __age_array= self.__input_age_one_core.iloc[i,8].split('>')
-                    __age_indi = NumericRange(int(__age_array[1]), None, bounds = '[)', empty = False)
-                    self.__input_age_one_core.iloc[i,8] = __age_indi
-                elif type(self.__input_age_one_core.iloc[i,8]) is str and '<' in self.__input_age_one_core.iloc[i,8]:
-                    __age_array= self.__input_age_one_core.iloc[i,8].split('<')
-                    __age_indi = NumericRange(None, int(__age_array[1]), bounds = '()', empty = False)
-                    self.__input_age_one_core.iloc[i,8] = __age_indi
+            
+            self.__input_age_one_core['age'] = self.__input_age_one_core['age'].astype(object)
+
+            for i in range(len(self.__input_age_one_core)):
+                age_val = self.__input_age_one_core.at[i, 'age']
+                if isinstance(age_val, str) and '>' in age_val:
+                    __age_array = age_val.split('>')
+                    __age_indi = NumericRange(int(__age_array[1]), None, bounds='[)', empty=False)
+                elif isinstance(age_val, str) and '<' in age_val:
+                    __age_array = age_val.split('<')
+                    __age_indi = NumericRange(None, int(__age_array[1]), bounds='()', empty=False)
                 else:
-                    __age_indi = NumericRange(int(self.__input_age_one_core.iloc[i,8]), int(self.__input_age_one_core.iloc[i,8]), bounds = '[]', empty = False)
-                    self.__input_age_one_core.iloc[i,8] = __age_indi
+                    __age_indi = NumericRange(int(age_val), int(age_val), bounds='[]', empty=False)
+            
+                self.__input_age_one_core.at[i, 'age'] = __age_indi
             ###
             for index, row in self.__input_age_one_core.iterrows():
                 if type(row['age']) == NumericRange and row['age'].upper == row['age'].lower:
@@ -808,6 +812,7 @@ class AgeFromFileMultiCores(object):
             self.fc.use_dir_icons = True
             self.fc.filter_pattern = ['*.xlsx']
             display(self.fc)
+            print("Pleae select your file and then continue with the execution of the next cell.")
         
     def __select_data_multi_cores(self):
         """
@@ -853,6 +858,7 @@ class AgeFromFileMultiCores(object):
             self.all_coreid_list = self.__input_age_multi_cores['coreid'].unique().tolist()
             #### For detection limit
             self.__input_age_multi_cores.reset_index(drop = True, inplace = True)
+            self.__input_age_multi_cores['age'] = self.__input_age_multi_cores['age'].astype(object)
             for i in range(0, len(self.__input_age_multi_cores)):
                 if type(self.__input_age_multi_cores.iloc[i,8]) is str and '>' in self.__input_age_multi_cores.iloc[i,8]:
                     __age_array= self.__input_age_multi_cores.iloc[i,8].split('>')
@@ -1196,6 +1202,8 @@ class ProxyFromFile(object):
             self.fc.use_dir_icons = True
             self.fc.filter_pattern = ['*.xlsx']
             display(self.fc)
+            print("Pleae select your file and then continue with the execution of the next cell.")
+
      
     def __proxy_data_multi_cores(self):
         """

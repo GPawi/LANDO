@@ -1,0 +1,17 @@
+FROM gnuoctave/octave:8.3.0 AS octave-pkg-builder
+
+# Install build tools
+RUN apt-get update && apt-get install -y \
+    gfortran libhdf5-dev libcurl4-openssl-dev libglpk-dev make wget && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install packages to final runtime location directly
+RUN mkdir -p /usr/local/share/octave/packages && \
+    octave --eval "\
+      pkg prefix /usr/local/share/octave/packages; \
+      pkg install -forge io; \
+      pkg install -forge statistics; \
+      pkg install -forge dataframe; \
+      pkg install -forge struct; \
+      pkg list;" && \
+    octave-cli --version

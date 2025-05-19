@@ -255,8 +255,8 @@ class PlotAgeSR(object):
             self.age_SR_core_dict.setdefault(core,[]).append(combine_SR_df)
         
         #### All results from the dictionary are now added to the two main return dataframes
-        self.combine_age_df = pd.DataFrame(columns = combine_age_df.columns)
-        self.combine_SR_df = pd.DataFrame(columns = combine_SR_df.columns)
+        self.combine_age_df = combine_age_df.iloc[0:0].copy()
+        self.combine_SR_df = combine_SR_df.iloc[0:0].copy()
         for key in self.age_SR_core_dict.keys():
             self.combine_age_df = pd.concat([self.combine_age_df, self.age_SR_core_dict[key][0]], ignore_index=True)
             self.combine_SR_df = pd.concat([self.combine_SR_df, self.age_SR_core_dict[key][1]], ignore_index=True)
@@ -350,7 +350,12 @@ class PlotAgeSR(object):
                         new_frame['coreid'] = core
                         new_frame['model_name'] = model_name
                         new_frame.replace(0, np.nan, inplace = True)
-                        self.model_frame = pd.concat([self.model_frame, new_frame], axis = 0)
+                        candidates = [
+                            df for df in [self.model_frame, new_frame]
+                            if not df.empty and df.dropna(axis=1, how='all').shape[1] > 0
+                        ]
+                        if candidates:
+                            self.model_frame = pd.concat(candidates, axis=0)
                     else:
                         pass
                 self.list_binned_SR_median_age.append(self.model_frame)
@@ -399,7 +404,13 @@ class PlotAgeSR(object):
                         new_frame.reset_index(drop=False, inplace = True)
                         new_frame['coreid'] = core
                         new_frame = new_frame.rename(columns={"SR_median":"Weighted_SR_median"})
-                        self.df_binned_combine_SR_median_age = pd.concat([self.df_binned_combine_SR_median_age, new_frame], axis = 0)
+                        frames_to_concat = [self.df_binned_combine_SR_median_age, new_frame]
+                        frames_to_concat = [
+                            f for f in frames_to_concat
+                            if not f.empty and f.dropna(axis=1, how='all').shape[1] > 0
+                        ]
+                        if frames_to_concat:
+                            self.df_binned_combine_SR_median_age = pd.concat(frames_to_concat, axis=0)
                 
                 self.df_binned_combine_SR_median_age = self.df_binned_combine_SR_median_age.sort_values(by = ['coreid','Binned_mid_age'], ignore_index = True)
            
@@ -513,7 +524,7 @@ class PlotAgeSR(object):
             else:
                 if self.for_color_blind == True: #### This changes the plot to be suitable for people with color vision deficiency
                     for data in self.age_data:
-                        line, = ax1.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax1, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], linewidth = 2, marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
+                        line, = ax1.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], linewidth = 2, marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
                         if self.sigma_range == 'both':
                             ax1.fill_betweenx(data['compositedepth'], data['upper_1_sigma'], data['lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
                             ax1.fill_betweenx(data['compositedepth'], data['upper_2_sigma'], data['lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
@@ -525,7 +536,7 @@ class PlotAgeSR(object):
                             pass
                 else:
                     for data in self.age_data:
-                        ax1.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax1, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
+                        ax1.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0].split(' ')[0]])
                         if self.sigma_range == 'both':
                             ax1.fill_betweenx(data['compositedepth'], data['upper_1_sigma'], data['lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
                             ax1.fill_betweenx(data['compositedepth'], data['upper_2_sigma'], data['lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
@@ -575,7 +586,7 @@ class PlotAgeSR(object):
             else:
                 if self.for_color_blind == True: #### This changes the plot to be suitable for people with color vision deficiency
                     for data in self.SR_data:
-                        ax2.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax2, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
+                        ax2.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
                         if self.sigma_range == 'both':
                             ax2.fill_betweenx(data['compositedepth'], data['SR_upper_1_sigma'], data['SR_lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
                             ax2.fill_betweenx(data['compositedepth'], data['SR_upper_2_sigma'], data['SR_lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
@@ -587,7 +598,7 @@ class PlotAgeSR(object):
                             pass
                 else:
                     for data in self.SR_data:
-                        ax2.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax2, color = model_color[data['model_name'].unique()[0]])
+                        ax2.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0]])
                         if self.sigma_range == 'both':
                             ax2.fill_betweenx(data['compositedepth'], data['SR_upper_1_sigma'], data['SR_lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0]])
                             ax2.fill_betweenx(data['compositedepth'], data['SR_upper_2_sigma'], data['SR_lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0]])
@@ -730,14 +741,14 @@ class PlotAgeSR(object):
                     core_counter += 1
                 
                 g.set_titles('')
-                g.set_axis_labels("","")
+                g.set_axis_labels("", "")
                 #### Set limits
                 self.xlim_min = int(1950 - datetime.datetime.now().year)
                 self.ylim_min = 0.001
                 self.ylim_max = None
                 g.set(ylim=(self.ylim_min, self.ylim_max))
                 g.set(xlim=(self.xlim_min, self.xlim_max))
-                g.tight_layout()
+                g.figure.tight_layout()
                 
                 #### Reduce the number that are shown in the plot
                 if self.reduce_plot_axis == True:
@@ -755,9 +766,16 @@ class PlotAgeSR(object):
                 self.ids = [*self.core_legend]
                 self.handles_c = [(i, 'black') for i in self.ids]
                 self.labels_c = [self.core_legend[number] for number in self.core_legend.keys()]
-                g.fig.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
-                g.fig.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.fig.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
-                g.fig.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.fig.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
+                g.figure.legend(
+                    handles=self.handles_c, labels=self.labels_c,
+                    handler_map={tuple: TextHandler()},
+                    fontsize=fontsize_legend,
+                    loc='center right',
+                    bbox_to_anchor=(1.1, 0.5),
+                    title='CoreID', title_fontsize=titlesize_legend
+                )
+                g.figure.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.figure.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.figure.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
                 
             else:
                 #### This plots the binned sedimentation rate versus median age for all sediment cores from all models
@@ -774,7 +792,7 @@ class PlotAgeSR(object):
                 for model_name in self.model_name_list:
                     patch = mpatches.Patch(color = model_color[model_name], label = model_name)
                     self.patch_legend.append(patch)
-                g.fig.legend(handles = self.patch_legend, labels = self.model_name_list, title = 'Software', loc = 'lower right', bbox_to_anchor = (1.1, 0), fontsize = fontsize_legend, title_fontsize = titlesize_legend)
+                g.figure.legend(handles = self.patch_legend, labels = self.model_name_list, title = 'Software', loc = 'center right', bbox_to_anchor = (1.105, 0.7), fontsize = fontsize_legend, title_fontsize = titlesize_legend)
                 self.core_legend = {}
                 core_counter = 1                
                 for coreid, ax in g.axes_dict.items():
@@ -816,15 +834,15 @@ class PlotAgeSR(object):
                     core_counter += 1
                 
                 g.set_titles('')
-                g.set_axis_labels("","")
+                g.set_axis_labels("", "")
                 #### Set limits
                 self.xlim_min = int(1950 - datetime.datetime.now().year)
                 self.ylim_min = 0.001
                 self.ylim_max = None
                 g.set(ylim=(self.ylim_min, self.ylim_max))
                 g.set(xlim=(self.xlim_min, self.xlim_max))
-                g.tight_layout()
-                
+                g.figure.tight_layout()
+
                 #### Reduce the number that are shown in the plot
                 if self.reduce_plot_axis == True:
                     value_x_tick = range(0, self.xlim_max + int(self.xlim_max/4), int(self.xlim_max/4))
@@ -841,13 +859,20 @@ class PlotAgeSR(object):
                 self.ids = [*self.core_legend]
                 self.handles_c = [(i, 'black') for i in self.ids]
                 self.labels_c = [self.core_legend[number] for number in self.core_legend.keys()]
-                g.fig.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
-                g.fig.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.fig.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
-                g.fig.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.fig.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
+                g.figure.legend(
+                    handles=self.handles_c, labels=self.labels_c,
+                    handler_map={tuple: TextHandler()},
+                    fontsize=fontsize_legend,
+                    loc='center right',
+                    bbox_to_anchor=(1.1, 0.5),
+                    title='CoreID', title_fontsize=titlesize_legend
+                )
+                g.figure.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.figure.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.figure.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
             
             #### This adds the header to the plot and saves the plot
             if self.dttp == 'No':
-                g.fig.suptitle('Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.suptitle('Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
                 if self.save == True and self.as_jpg == False:
                     date = f"{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
                     plt.savefig(f'output_figures/age_models_without_RC_multicore_{date}.pdf', dpi = 600, bbox_inches = 'tight')
@@ -857,7 +882,7 @@ class PlotAgeSR(object):
                 else:
                     pass
             else:
-                g.fig.suptitle('Reservoir Corrected Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.suptitle('Reservoir Corrected Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
                 if self.save == True and self.as_jpg == False:
                     date = f"{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
                     plt.savefig(f'output_figures/age_models_with_RC_multicore_{date}.pdf', dpi = 600, bbox_inches = 'tight')
@@ -969,7 +994,7 @@ class PlotAgeSR(object):
             self.c_fitting_values = self.fitting_values[self.coreid[0]]
             self.c_optimization_values = self.optimization_values[self.coreid[0]]
             if self.show_fitting_models == True: #### This if statement ensures that no data will be deleted if only excluded models are shown
-                self.excluded_models = [self.c_fitting_values.index[i] for i in range(len(self.c_fitting_values)) if self.c_fitting_values[i] <= self.inclusion_threshold]
+                self.excluded_models = [self.c_fitting_values.index[i] for i in range(len(self.c_fitting_values)) if self.c_fitting_values.iloc[i] <= self.inclusion_threshold]
                 for i in self.excluded_models:
                     self.model_plot_data.pop(i)
             self.__frame_prep()
@@ -997,7 +1022,7 @@ class PlotAgeSR(object):
             else:
                 if self.for_color_blind == True:
                     for data in self.age_data:
-                        line, = ax2.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax2, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], linewidth = 2, marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
+                        line, = ax2.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], linewidth = 2, marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
                         if self.sigma_range == 'both':
                             ax2.fill_betweenx(data['compositedepth'], data['upper_1_sigma'], data['lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
                             ax2.fill_betweenx(data['compositedepth'], data['upper_2_sigma'], data['lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0].split(' ')[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
@@ -1009,7 +1034,7 @@ class PlotAgeSR(object):
                             pass
                 else:
                     for data in self.age_data:
-                        ax2.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax2, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
+                        ax2.plot('modeloutput_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0].split(' ')[0]])
                         if self.sigma_range == 'both':
                             ax2.fill_betweenx(data['compositedepth'], data['upper_1_sigma'], data['lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
                             ax2.fill_betweenx(data['compositedepth'], data['upper_2_sigma'], data['lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0].split(' ')[0]])
@@ -1070,7 +1095,7 @@ class PlotAgeSR(object):
             else:
                 if self.for_color_blind == True:
                     for data in self.SR_data:
-                        ax3.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax3, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
+                        ax3.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], marker = marker_model[data['model_name'].unique()[0].split(' ')[0]], markevery = 20)
                         if self.sigma_range == 'both':
                             ax3.fill_betweenx(data['compositedepth'], data['SR_upper_1_sigma'], data['SR_lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
                             ax3.fill_betweenx(data['compositedepth'], data['SR_upper_2_sigma'], data['SR_lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0]], linestyle = linestyles_model[data['model_name'].unique()[0].split(' ')[0]], hatch = hatch_model[data['model_name'].unique()[0].split(' ')[0]])
@@ -1082,7 +1107,7 @@ class PlotAgeSR(object):
                             pass
                 else:
                     for data in self.SR_data:
-                        ax3.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], axes = ax3, color = model_color[data['model_name'].unique()[0]])
+                        ax3.plot('SR_median', 'compositedepth', data = data, label = data['model_name'].unique()[0], color = model_color[data['model_name'].unique()[0]])
                         if self.sigma_range == 'both':
                             ax3.fill_betweenx(data['compositedepth'], data['SR_upper_1_sigma'], data['SR_lower_1_sigma'], alpha = .3, color = model_color[data['model_name'].unique()[0]])
                             ax3.fill_betweenx(data['compositedepth'], data['SR_upper_2_sigma'], data['SR_lower_2_sigma'], alpha = .1, color = model_color[data['model_name'].unique()[0]])
@@ -1127,7 +1152,7 @@ class PlotAgeSR(object):
                 self.c_fitting_values = self.c_fitting_values[~self.c_fitting_values.index.isin(self.excluded_models)]
             info_string = ""
             for i in range(len(self.c_fitting_values)):
-                info_string += f"{self.c_fitting_values.index[i]}: {round(self.c_fitting_values[i], 4)}"
+                info_string += f"{self.c_fitting_values.index[i]}: {round(self.c_fitting_values.iloc[i], 4)}"
                 if i != len(self.c_fitting_values)-1:
                     info_string += ", "
             ax2.text(x = ((ax2_min + ax2_max)/2), y = (ax2.get_ylim()[0] * 1.05), s = info_string, ha = 'center')
@@ -1292,9 +1317,9 @@ class PlotAgeSR(object):
                 self.ids = [*self.core_legend]
                 self.handles_c = [(i, 'black') for i in self.ids]
                 self.labels_c = [self.core_legend[number] for number in self.core_legend.keys()]
-                g.fig.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
-                g.fig.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.fig.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
-                g.fig.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.fig.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
+                g.figure.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
+                g.figure.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.figure.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.figure.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
                 
             else:
                 #### This plots the binned sedimentation rate versus median age for all sediment cores from all models
@@ -1311,7 +1336,7 @@ class PlotAgeSR(object):
                 for model_name in self.model_name_list:
                     patch = mpatches.Patch(color = model_color[model_name], label = model_name)
                     self.patch_legend.append(patch)
-                g.fig.legend(handles = self.patch_legend, labels = self.model_name_list, title = 'Software', loc = 'lower right', bbox_to_anchor = (1.1, 0), fontsize = fontsize_legend, title_fontsize = titlesize_legend)
+                g.figure.legend(handles = self.patch_legend, labels = self.model_name_list, title = 'Software', loc = 'center right', bbox_to_anchor = (1.105, 0.7), fontsize = fontsize_legend, title_fontsize = titlesize_legend)
                 self.core_legend = {}
                 core_counter = 1                
                 for coreid, ax in g.axes_dict.items():
@@ -1380,13 +1405,13 @@ class PlotAgeSR(object):
                 self.ids = [*self.core_legend]
                 self.handles_c = [(i, 'black') for i in self.ids]
                 self.labels_c = [self.core_legend[number] for number in self.core_legend.keys()]
-                g.fig.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
-                g.fig.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.fig.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
-                g.fig.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.fig.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
+                g.figure.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
+                g.figure.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.figure.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.figure.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
             
             #### This adds the header to the plot and saves the plot
             if self.dttp == 'No':
-                g.fig.suptitle('Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.suptitle('Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
                 if self.save == True and self.as_jpg == False:
                     date = f"{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
                     plt.savefig(f'output_figures/age_models_without_RC_multicore_{date}.pdf', dpi = 600, bbox_inches = 'tight')
@@ -1396,7 +1421,7 @@ class PlotAgeSR(object):
                 else:
                     pass
             else:
-                g.fig.suptitle('Reservoir Corrected Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.suptitle('Reservoir Corrected Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
                 if self.save == True and self.as_jpg == False:
                     date = f"{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
                     plt.savefig(f'output_figures/age_models_with_RC_multicore_{date}.pdf', dpi = 600, bbox_inches = 'tight')
