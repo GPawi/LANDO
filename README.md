@@ -114,7 +114,7 @@ If you cloned this repo, the `./LANDO` script is a symlink to `launch-lando.sh`.
 Once LANDO is running and you’re inside the JupyterLab interface:
 
 1. Click the **Upload** button at the top-left of the Jupyter file browser
-2. Select a `.csv` or other file from your computer
+2. Select a `.xslx` file with your data in the LANDO format from your computer
 3. Your file will appear in the workspace, ready to use in the notebooks
 
 > ⚠️ Note: files uploaded this way are *temporary*. If you stop the container, the files will be deleted. Be sure to download any outputs before exiting.
