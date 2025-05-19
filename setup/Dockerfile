@@ -122,6 +122,9 @@ RUN echo "addpath('/src/UndatableFolder')" >> /home/jovyan/.octaverc && \
 COPY setup/lando-entrypoint.sh /usr/local/bin/lando-entrypoint.sh
 RUN chmod +x /usr/local/bin/lando-entrypoint.sh
 
+# Ensure all project files and folders are writable by the jovyan user
+RUN chown -R $NB_UID:users /home/jovyan/work && chmod -R u+rw /home/jovyan/work
+
 # Switch back to the notebook user
 USER $NB_UID
 

@@ -103,13 +103,7 @@ docker run -it -p 8888:8888 -v $(pwd)/my_data:/home/jovyan/data gregpfalz/lando-
 
 ---
 
-### 📁 Project Directory
-
-If you cloned this repo, the `./LANDO` script is a symlink to `launch-lando.sh`. You can inspect or modify that script for advanced control.
-
----
-
-### 📤 Uploading Your Own Data (Easiest Method)
+## 📤 Uploading Your Own Data (Easiest Method)
 
 Once LANDO is running and you’re inside the JupyterLab interface:
 
@@ -120,6 +114,66 @@ Once LANDO is running and you’re inside the JupyterLab interface:
 > ⚠️ Note: files uploaded this way are *temporary*. If you stop the container, the files will be deleted. Be sure to download any outputs before exiting.
 
 ---
+
+## 🛑 Good Practice: Shutting Down LANDO
+
+### 📘 If You Started LANDO with `./LANDO` (Option 1 – GitHub Clone)
+
+Just press:
+
+```
+Ctrl+C
+```
+
+in the terminal where it’s running. This will:
+- Gracefully shut down the Docker container
+- Clean up temporary folders (like `tmp_host`)
+- Leave your local files and data intact
+
+---
+
+### 🐳 If You Started LANDO with `docker run` (Option 2 – Docker Only)
+
+You have two main options:
+
+#### ✅ Recommended: Use `--rm` for auto-cleanup
+
+This deletes the container automatically after exit:
+
+```bash
+docker run --rm -it -p 8888:8888 gregpfalz/lando-age-depth
+```
+
+Then just close the browser tab and press `Ctrl+C` in the terminal.
+
+#### 🧹 If You Did Not Use `--rm`
+
+You’ll need to clean up manually:
+
+1. First, stop the container (if it’s still running):
+
+```bash
+docker ps
+docker stop <container_id>
+```
+
+2. Then remove unused containers/images:
+
+```bash
+docker container prune
+docker image prune
+```
+
+> 💡 These commands remove stopped containers or dangling images. They won’t delete anything running or important.
+
+---
+
+### 💬 Tip: Always Download Your Results
+
+Remember that anything **inside the container** is temporary unless you:
+- Mount a folder (`-v $(pwd)/my_data:/home/jovyan/data`), or
+- Manually download files from JupyterLab before shutdown
+
 
 ## 🔧 Built-in Language Support
 
