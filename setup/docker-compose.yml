@@ -9,4 +9,5 @@ services:
       - ../src/tmp_host:/tmp
     environment:
       - PYDEVD_DISABLE_FILE_VALIDATION=1
+      - TMPDIR=/tmp
     command: start-notebook.py --NotebookApp.token='' --NotebookApp.default_url=/lab/tree/LANDO.ipynb

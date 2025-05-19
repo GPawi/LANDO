@@ -49,7 +49,7 @@ run_hamstr_for_core <- function(core_id, hamstr_Frame, CoreLengths,
     top_depth = top_depth,
     bottom_depth = bottom_depth,
     K_fine = K_fine,
-    stan_sampler_args = list(iter = iter)
+    stan_sampler_args = list(iter = iter, control = list(max_treedepth = 15))
   )
 
   pred <- predict(fit, depth = seq(top_depth, bottom_depth, by = 1)) |>

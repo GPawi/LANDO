@@ -1,5 +1,5 @@
-### LANDO Clam runner script — double parallelization, live output, pre-calibrated dates (cc=0) ###
-
+### Script to run clam in LANDO ###
+## Load libraries
 suppressPackageStartupMessages({
   library(clam)
   library(tidyverse)

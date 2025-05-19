@@ -1,3 +1,5 @@
+### Script to run rbacon in LANDO ###
+## Load libraries
 suppressPackageStartupMessages({
   library(rbacon)
   library(tidyverse)

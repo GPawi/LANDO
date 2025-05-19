@@ -5,6 +5,7 @@ cd "$(dirname "$0")"
 
 # Ensure tmp_host exists in project root
 mkdir -p ./src/tmp_host
+chmod 1777 ./src/tmp_host
 
 # Launch Docker Compose using the relative path to the YAML file
 echo "🚀 Starting LANDO environment..."

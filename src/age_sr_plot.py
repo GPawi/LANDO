@@ -741,14 +741,14 @@ class PlotAgeSR(object):
                     core_counter += 1
                 
                 g.set_titles('')
-                g.set_axis_labels("","")
+                g.set_axis_labels("", "")
                 #### Set limits
                 self.xlim_min = int(1950 - datetime.datetime.now().year)
                 self.ylim_min = 0.001
                 self.ylim_max = None
                 g.set(ylim=(self.ylim_min, self.ylim_max))
                 g.set(xlim=(self.xlim_min, self.xlim_max))
-                g.tight_layout()
+                g.figure.tight_layout()
                 
                 #### Reduce the number that are shown in the plot
                 if self.reduce_plot_axis == True:
@@ -766,9 +766,16 @@ class PlotAgeSR(object):
                 self.ids = [*self.core_legend]
                 self.handles_c = [(i, 'black') for i in self.ids]
                 self.labels_c = [self.core_legend[number] for number in self.core_legend.keys()]
-                g.fig.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
-                g.fig.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.fig.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
-                g.fig.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.fig.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
+                g.figure.legend(
+                    handles=self.handles_c, labels=self.labels_c,
+                    handler_map={tuple: TextHandler()},
+                    fontsize=fontsize_legend,
+                    loc='center right',
+                    bbox_to_anchor=(1.1, 0.5),
+                    title='CoreID', title_fontsize=titlesize_legend
+                )
+                g.figure.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.figure.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.figure.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
                 
             else:
                 #### This plots the binned sedimentation rate versus median age for all sediment cores from all models
@@ -785,7 +792,7 @@ class PlotAgeSR(object):
                 for model_name in self.model_name_list:
                     patch = mpatches.Patch(color = model_color[model_name], label = model_name)
                     self.patch_legend.append(patch)
-                g.fig.legend(handles = self.patch_legend, labels = self.model_name_list, title = 'Software', loc = 'lower right', bbox_to_anchor = (1.1, 0), fontsize = fontsize_legend, title_fontsize = titlesize_legend)
+                g.figure.legend(handles = self.patch_legend, labels = self.model_name_list, title = 'Software', loc = 'center right', bbox_to_anchor = (1.105, 0.7), fontsize = fontsize_legend, title_fontsize = titlesize_legend)
                 self.core_legend = {}
                 core_counter = 1                
                 for coreid, ax in g.axes_dict.items():
@@ -827,15 +834,15 @@ class PlotAgeSR(object):
                     core_counter += 1
                 
                 g.set_titles('')
-                g.set_axis_labels("","")
+                g.set_axis_labels("", "")
                 #### Set limits
                 self.xlim_min = int(1950 - datetime.datetime.now().year)
                 self.ylim_min = 0.001
                 self.ylim_max = None
                 g.set(ylim=(self.ylim_min, self.ylim_max))
                 g.set(xlim=(self.xlim_min, self.xlim_max))
-                g.tight_layout()
-                
+                g.figure.tight_layout()
+
                 #### Reduce the number that are shown in the plot
                 if self.reduce_plot_axis == True:
                     value_x_tick = range(0, self.xlim_max + int(self.xlim_max/4), int(self.xlim_max/4))
@@ -852,13 +859,20 @@ class PlotAgeSR(object):
                 self.ids = [*self.core_legend]
                 self.handles_c = [(i, 'black') for i in self.ids]
                 self.labels_c = [self.core_legend[number] for number in self.core_legend.keys()]
-                g.fig.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
-                g.fig.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.fig.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
-                g.fig.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.fig.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
+                g.figure.legend(
+                    handles=self.handles_c, labels=self.labels_c,
+                    handler_map={tuple: TextHandler()},
+                    fontsize=fontsize_legend,
+                    loc='center right',
+                    bbox_to_anchor=(1.1, 0.5),
+                    title='CoreID', title_fontsize=titlesize_legend
+                )
+                g.figure.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.figure.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.figure.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
             
             #### This adds the header to the plot and saves the plot
             if self.dttp == 'No':
-                g.fig.suptitle('Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.suptitle('Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
                 if self.save == True and self.as_jpg == False:
                     date = f"{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
                     plt.savefig(f'output_figures/age_models_without_RC_multicore_{date}.pdf', dpi = 600, bbox_inches = 'tight')
@@ -868,7 +882,7 @@ class PlotAgeSR(object):
                 else:
                     pass
             else:
-                g.fig.suptitle('Reservoir Corrected Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.suptitle('Reservoir Corrected Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
                 if self.save == True and self.as_jpg == False:
                     date = f"{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
                     plt.savefig(f'output_figures/age_models_with_RC_multicore_{date}.pdf', dpi = 600, bbox_inches = 'tight')
@@ -1303,9 +1317,9 @@ class PlotAgeSR(object):
                 self.ids = [*self.core_legend]
                 self.handles_c = [(i, 'black') for i in self.ids]
                 self.labels_c = [self.core_legend[number] for number in self.core_legend.keys()]
-                g.fig.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
-                g.fig.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.fig.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
-                g.fig.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.fig.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
+                g.figure.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
+                g.figure.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.figure.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.figure.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
                 
             else:
                 #### This plots the binned sedimentation rate versus median age for all sediment cores from all models
@@ -1322,7 +1336,7 @@ class PlotAgeSR(object):
                 for model_name in self.model_name_list:
                     patch = mpatches.Patch(color = model_color[model_name], label = model_name)
                     self.patch_legend.append(patch)
-                g.fig.legend(handles = self.patch_legend, labels = self.model_name_list, title = 'Software', loc = 'lower right', bbox_to_anchor = (1.1, 0), fontsize = fontsize_legend, title_fontsize = titlesize_legend)
+                g.figure.legend(handles = self.patch_legend, labels = self.model_name_list, title = 'Software', loc = 'center right', bbox_to_anchor = (1.105, 0.7), fontsize = fontsize_legend, title_fontsize = titlesize_legend)
                 self.core_legend = {}
                 core_counter = 1                
                 for coreid, ax in g.axes_dict.items():
@@ -1391,13 +1405,13 @@ class PlotAgeSR(object):
                 self.ids = [*self.core_legend]
                 self.handles_c = [(i, 'black') for i in self.ids]
                 self.labels_c = [self.core_legend[number] for number in self.core_legend.keys()]
-                g.fig.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
-                g.fig.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.fig.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
-                g.fig.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.fig.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
+                g.figure.legend(handles=self.handles_c, labels=self.labels_c, handler_map={tuple : TextHandler()}, fontsize = fontsize_legend, loc = 'center right', bbox_to_anchor = (1.1, 0.5), title = 'CoreID', title_fontsize = titlesize_legend)
+                g.figure.text(.5, -0.02, 'Median Ages [cal yr BP]', transform=g.figure.transFigure, horizontalalignment='center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.text(-0.01, .5, 'Median Sedimentation Rate [cm/yr]', transform=g.figure.transFigure, ha='center', va='center', fontsize = labelsize_axis, fontweight = 'bold', rotation = 'vertical')
             
             #### This adds the header to the plot and saves the plot
             if self.dttp == 'No':
-                g.fig.suptitle('Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.suptitle('Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
                 if self.save == True and self.as_jpg == False:
                     date = f"{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
                     plt.savefig(f'output_figures/age_models_without_RC_multicore_{date}.pdf', dpi = 600, bbox_inches = 'tight')
@@ -1407,7 +1421,7 @@ class PlotAgeSR(object):
                 else:
                     pass
             else:
-                g.fig.suptitle('Reservoir Corrected Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
+                g.figure.suptitle('Reservoir Corrected Age Models - Multicore', y = 1.02, ha = 'center', fontsize = labelsize_axis, fontweight = 'bold')
                 if self.save == True and self.as_jpg == False:
                     date = f"{datetime.datetime.now():%Y-%m-%d_%H-%M-%S}"
                     plt.savefig(f'output_figures/age_models_with_RC_multicore_{date}.pdf', dpi = 600, bbox_inches = 'tight')

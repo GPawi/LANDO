@@ -1,13 +1,15 @@
 ### Script to define reservoir values with hamstr in LANDO ###
 ## Load libraries
-suppressPackageStartupMessages(c(library('hamstr'),
-                                 library('rstan'),
-                                 library('Bchron'),
-                                 library('tidyverse'),
-                                 library('parallel'),
-                                 library('foreach'),
-                                 library('doSNOW'),
-                                 library('doRNG')))
+suppressPackageStartupMessages({
+  library('hamstr')
+  library('rstan')
+  library('Bchron')
+  library('tidyverse')
+  library('parallel')
+  library('foreach')
+  library('doSNOW')
+  library('doRNG')
+  })
 set.seed(20201224)
 
 if (length(RC_CoreIDs) == 1) {
@@ -30,7 +32,8 @@ if (length(RC_CoreIDs) == 1) {
   if (parallel::detectCores() >= 3) options(mc.cores = 3)
   core_selection <- RC_Frame %>% filter(str_detect(id, RC_CoreIDs[[i]]))
   clength <- RC_CoreLengths %>% filter(str_detect(coreid, RC_CoreIDs[[i]]))
-  hamstr_fitting <- hamstr(depth = core_selection$position,
+  suppressWarnings({
+    hamstr_fitting <- hamstr(depth = core_selection$position,
                            obs_age = core_selection$ages_calib,
                            obs_err = core_selection$ages_calib_Sds,
                            top_depth = 0,
@@ -38,6 +41,7 @@ if (length(RC_CoreIDs) == 1) {
                            min_age = -150,
                            K_fine = K_fine,
                            stan_sampler_args = list(iter = 2000))
+  })
   age.mods.interp <- predict(hamstr_fitting, depth = 0)
   result_individual_core <- as.data.frame(age.mods.interp)
   result_individual_core$depth <- paste(RC_CoreIDs[[i]], factor(result_individual_core$depth))
@@ -50,7 +54,8 @@ if (length(RC_CoreIDs) == 1) {
     if (parallel::detectCores() >= 3) options(mc.cores = 3)
     core_selection <- RC_Frame %>% filter(str_detect(id, RC_CoreIDs[[i]]))
     clength <- RC_CoreLengths %>% filter(str_detect(coreid, RC_CoreIDs[[i]]))
-    hamstr_fitting <- hamstr(depth = core_selection$position,
+    suppressWarnings({
+      hamstr_fitting <- hamstr(depth = core_selection$position,
                              obs_age = core_selection$ages_calib,
                              obs_err = core_selection$ages_calib_Sds,
                              top_depth = 0,
@@ -58,6 +63,7 @@ if (length(RC_CoreIDs) == 1) {
                              min_age = -150,
                              K_fine = K_fine,
                              stan_sampler_args = list(iter = 2000))
+    })
     age.mods.interp <- predict(hamstr_fitting, depth = 0)
     result_individual_core <- as.data.frame(age.mods.interp)
     result_individual_core$depth <- paste(RC_CoreIDs[[i]], factor(result_individual_core$depth))
@@ -97,11 +103,13 @@ if (length(RC_CoreIDs) == 1) {
                                     .maxcombine = 1000,
                                     .inorder = FALSE,
                                     .options.RNG = seed) %dorng% {
-    suppressPackageStartupMessages(c(library('tidyverse'), 
-                                     library('hamstr'), 
-                                     library('rstan'), 
-                                     library('foreach'), 
-                                     library('parallel')))
+    suppressPackageStartupMessages({library('tidyverse')
+                                    library('hamstr')
+                                    library('rstan')
+                                    library('foreach')
+                                    library('parallel')
+                                    library('rngtools')
+                                  })
     tryCatch(
       RC_parallel(i, RC_Frame, RC_CoreIDs),
       error = function(e) {

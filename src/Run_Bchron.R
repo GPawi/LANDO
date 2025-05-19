@@ -1,15 +1,17 @@
 ### Script to run Bchron in LANDO ###
 ## Load libraries
-suppressPackageStartupMessages(c(library('tidyverse')
-                                 ,library('Bchron')
-                                 ,library('parallel')
-                                 ,library('doParallel')
-                                 ,library('foreach')
-                                 ,library('doRNG')
-                                 ,library('doSNOW')
-                                 ))
+suppressPackageStartupMessages({
+  library('tidyverse')
+  library('Bchron')
+  library('parallel')
+  library('doParallel')
+  library('foreach')
+  library('doRNG')
+  library('doSNOW')
+  library('rngtools')
+})
 
-
+# ---- Bchron runner for one core ----
 if (length(CoreIDs) == 1) {
   i = 1
   ## Load data
@@ -74,9 +76,8 @@ if (length(CoreIDs) == 1) {
   Bchron_Frame <- Bchron_Frame %>%
       mutate_all(type.convert, as.is = TRUE) %>%
       mutate_at(c("ages", "ageSds"), as.integer)
-  seq_id_all <- 1:length(CoreIDs)
+  seq_id_all <- seq_along(CoreIDs)
   clusterExport(cl,list('Bchron_parallel','Bchron_Frame','CoreIDs','CoreLengths')) 
-  
   
   ## Run function in parallel in cluster
   Bchron_core_results <- foreach(i = seq_id_all 
@@ -86,10 +87,13 @@ if (length(CoreIDs) == 1) {
                                 ,.inorder = FALSE
                                 ,.options.RNG=seed
                                 ) %dorng% {
-                                  suppressPackageStartupMessages(c(library('tidyverse'),
-                                                                   library('Bchron'),
-                                                                   library('foreach'),
-                                                                   library('parallel')))
+                                  suppressPackageStartupMessages({
+                                    library('tidyverse')
+                                    library('Bchron')
+                                    library('foreach')
+                                    library('parallel')
+                                    library('rngtools')
+                                  })
                                   tryCatch(
                                     Bchron_parallel(i, Bchron_Frame, CoreIDs)
                                            ,error = function(e){
