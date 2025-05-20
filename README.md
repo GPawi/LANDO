@@ -193,7 +193,7 @@ LANDO enables age-depth modeling across single and multiple cores. Input data ca
 
 | Modeling System | Key Parameters |
 |-----------------|----------------|
-| Bacon           | `acc.shape`, `acc.mean`, `mem.strength`, `ssize` |
+| Bacon           | `acc.shape`, `acc.mean`, `mem.strength`, `mem.mean`, `ssize` |
 | clam            | `types_curve`, `smoothness_curve`, `poly_degree_curve` |
 | hamstr          | `K_fine` |
 | Undatable       | `xfactor`, `bootpc` |
