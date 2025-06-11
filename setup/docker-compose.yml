@@ -1,6 +1,6 @@
 services:
   jupyter:
-    image: lando-full
+    image: gregpfalz/lando-age-depth
     container_name: lando-lab
     ports:
       - "8888:8888"
